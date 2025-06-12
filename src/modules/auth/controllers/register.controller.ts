@@ -7,6 +7,8 @@ export const signup = asyncWrapper(async (req, res, next) => {
       message: "ok",
     });
   } catch (err: any) {
+    console.log(err)
     return next(new HttpError(err.message, 500));
+    //testing comment
   }
 });
