@@ -1,16 +1,28 @@
 import express from "express";
 import { authRouter } from "./modules/auth/routes/auth.routes";
 import { globalErrorHandler } from "./utils/error-middleware";
+import pool from "./adapters/postgres/postgres.adapter"; // ✅ default import
 
 const app = express();
-// middleware chain here
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 app.use("/api/v1/auth", authRouter);
 
-// global error handler must be at the bottom of the midldeware chain
 app.use(globalErrorHandler);
 
-app.listen(4000, () => {
-  console.log("✅ Server running at port: ", 4000);
+const PORT = 4000;
+
+pool
+  .connect()
+
+  .then(() => {
+    console.log("✅ PostgreSQL connected");
+    app.listen(PORT, () => {
+      console.log(`✅ Server running at port: ${PORT}`);
+    });
+  })
+  .catch((err: any) => {
+    console.error(" Failed to connect to PostgreSQL:", err.message);
+    process.exit(1);
 });
