@@ -5,6 +5,7 @@ import { registerEntity } from "../dto/auth.dto";
 
 const authRouter = Router();
 
-authRouter.route("/signup").post(validator(registerEntity), signup);
+authRouter.route("/signup")
+.post(validator(registerEntity), signup);
 
 export { authRouter };

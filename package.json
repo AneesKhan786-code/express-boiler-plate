@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:dev": "pnpm nodemon",
+    "start:dev": "nodemon src/server.ts",
     "start:prod": "node dist/index.js",
     "build": "npx tsc"
   },
@@ -14,12 +14,16 @@
   "license": "ISC",
   "packageManager": "pnpm@10.12.1",
   "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.0",
-    "zod": "^3.25.63"
+    "zod": "^3.25.67"
   },
   "devDependencies": {
+    "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.3",
     "@types/node": "^24.0.1",
     "@types/pg": "^8.15.4",
