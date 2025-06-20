@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:dev": "nodemon src/server.ts",
+    "start:dev": "nodemon --exec ts-node -r tsconfig-paths/register src/server.ts",
     "start:prod": "node dist/index.js",
     "build": "npx tsc"
   },
@@ -23,8 +23,10 @@
     "zod": "^3.25.67"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.9",
     "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.0.1",
     "@types/pg": "^8.15.4",
     "nodemon": "^3.1.10",
