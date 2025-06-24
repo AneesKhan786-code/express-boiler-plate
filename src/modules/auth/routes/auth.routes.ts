@@ -5,6 +5,7 @@ import { protectedRoute } from "../controllers/protected.controller";
 import { validator } from "@/shared/middleware/body-validator";
 import { registerEntity } from "../dto/auth.dto";
 import { protect } from "@/shared/middleware/auth.middleware";
+import { login } from "../controllers/login.controller";
 
 const authRouter = Router();
 
@@ -16,5 +17,8 @@ authRouter.get("/refresh", refresh);
 
 // Protected Route (needs access token)
 authRouter.get("/protected", protect, protectedRoute);
+
+// login routes
+authRouter.post("/login", login);
 
 export { authRouter };
