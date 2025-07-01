@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { addExpense } from "../controllers/expense.controller";
-import { protect } from "@/shared/middleware/auth.middleware";
+import { createExpense } from "../controllers/expense.controller";
+import { protect } from "../../../shared/middleware/auth.middleware"; // ✅ required
 
-const expenseRouter = Router();
+const router = Router();
 
-expenseRouter.post("/add", protect, addExpense);
+router.post("/", protect, createExpense); // ✅ secure expense route
 
-export { expenseRouter };
+export default router;

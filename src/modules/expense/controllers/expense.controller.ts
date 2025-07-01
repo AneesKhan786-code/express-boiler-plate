@@ -1,21 +1,21 @@
-import pool from "@/adapters/postgres/postgres.adapter"; 
+import { Request, Response } from "express";
 import { asyncWrapper } from "@/lib/fn-wrapper";
-import { HttpError } from "@/lib/fn-error";
+import { createExpenseDto } from "../dto/expense.dto";
+import pool from "@/adapters/postgres/postgres.adapter";
 
-export const addExpense = asyncWrapper(async (req, res, next) => {
-  const { title, amount, category } = req.body;
-  const user = (req as any).user;
+export const createExpense = asyncWrapper(async (req: Request, res: Response) => {
+  const parsed = createExpenseDto.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: "Invalid input" });
 
-  if (!title || !amount) {
-    return next(new HttpError("Title and amount are required", 400));
-  }
+  const { amount, description } = parsed.data;
+  const userId = (req as any).user.id;
 
-  const result = await pool.query(
-    `INSERT INTO expenses (user_id, title, amount, category)
-     VALUES ($1, $2, $3, $4)
-     RETURNING *`,
-    [user.id, title, amount, category]
+  const {
+    rows: [expense],
+  } = await pool.query(
+    `INSERT INTO expenses (user_id, amount, description) VALUES ($1, $2, $3) RETURNING *`,
+    [userId, amount, description]
   );
 
-  res.status(201).json({ expense: result.rows[0] });
+  res.status(201).json({ message: "Expense recorded successfully", expense });
 });

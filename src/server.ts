@@ -5,9 +5,9 @@ const PORT = 4000;
 
 pool.connect()
   .then(() => {
-    console.log("✅ PostgreSQL connected");
+    console.log(" PostgreSQL connected");
     app.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
+      console.log(` Server running on http://localhost:${PORT}`);
     });
   })
   .catch((err: any) => {

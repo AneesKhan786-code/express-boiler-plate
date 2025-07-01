@@ -8,12 +8,3 @@ export const asyncWrapper = (
   };
 };
 
-//   app.get("/route", async (req, res, next) => {
-//     try {
-//        something that might throw error here
-//     } catch (err) {
-//       next(err); err is catched
-//     }
-//   });
-
-// this can be simplified using an high order function.
