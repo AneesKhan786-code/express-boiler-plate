@@ -15,17 +15,30 @@ export const signup = asyncWrapper(async (req, res, next) => {
 
   const hashedPassword = await hash(password, 10);
 
+  //Add default role: "user"
+  const defaultRole = "user";
+
   const {
     rows: [user],
   } = await pool.query(
-    `INSERT INTO users (name, email, password) 
-     VALUES ($1, $2, $3) RETURNING id, name, email`,
-    [name, email, hashedPassword]
+    `INSERT INTO users (name, email, password, role) 
+     VALUES ($1, $2, $3, $4) RETURNING id, name, email, role`,
+    [name, email, hashedPassword, defaultRole]
   );
 
   const { generateAccessToken, generateRefreshToken } = await import("@/utils/jwt");
-  const accessToken = generateAccessToken({ id: user.id, email: user.email });
-  const refreshToken = generateRefreshToken({ id: user.id, email: user.email });
+
+  const accessToken = generateAccessToken({
+    id: user.id,
+    email: user.email,
+    role: user.role,
+  });
+
+  const refreshToken = generateRefreshToken({
+    id: user.id,
+    email: user.email,
+    role: user.role,
+  });
 
   res
     .cookie("refreshToken", refreshToken, {
