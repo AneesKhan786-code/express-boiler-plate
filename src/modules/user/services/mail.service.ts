@@ -1,0 +1,41 @@
+import { transporter } from '@/utils/email';
+import pool from '@/adapters/postgres/postgres.adapter';
+
+interface SendOtpInput {
+  email: string;
+  name: string;
+  otp: string;
+}
+
+interface SendNoteEmailInput {
+  userId: string;
+  note: string;
+  title: string
+}
+
+//Ye function signup ke time call hota hai email verification OTP bhejne ke liye.
+export const sendOtpToEmail = async ({ email, name, otp }: SendOtpInput) => {
+  return await transporter.sendMail({
+    from: process.env.MAIL_USER,
+    to: email,
+    subject: "Verify your Email",
+    text: `Hello ${name},\n\nYour OTP code is ${otp}. It expires in 5 minutes.`,
+  });
+};
+
+//Ye function kisi bhi verified user ko custom message (note) bhejne ke liye use hota hai.
+export const sendNoteToUser = async ({ userId, note, title }: SendNoteEmailInput) => {
+  const userRes = await pool.query("SELECT name, email FROM users WHERE id = $1", [userId]);
+  const user = userRes.rows[0];
+  if (!user) throw new Error("User not found");
+
+  const mailOptions = {
+    from: process.env.MAIL_USER,
+    to: user.email,
+    subject: title,
+    text: `Hello ${user.name},\n\n${note}`,
+  };
+
+  const info = await transporter.sendMail(mailOptions);
+  return info;
+};

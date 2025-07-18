@@ -1,9 +1,10 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { asyncWrapper } from "@/lib/fn-wrapper";
 import { HttpError } from "@/lib/fn-error";
 import { createUserDto } from "../dto/user.dto";
 import { hash } from "bcryptjs";
 import pool from "@/adapters/postgres/postgres.adapter";
+import { sendNoteToUser } from '../services/mail.service';
 
 // ✅ Create User - Save into `users`
 export const createUser = asyncWrapper(async (req: Request, res: Response, next) => {
@@ -30,7 +31,6 @@ export const createUser = asyncWrapper(async (req: Request, res: Response, next)
 // ✅ Get Job & Today's Expense using subqueries from `users`
 export const getUserJobAndTodayExpense = asyncWrapper(async (req: Request, res: Response, next) => {
   const userId = (req as any).user.id;
-  
 
   const result = await pool.query(
     `
@@ -47,7 +47,19 @@ export const getUserJobAndTodayExpense = asyncWrapper(async (req: Request, res: 
     `,
     [userId]
   );
+console.log("userId:", userId);
 
- 
   res.status(200).json({ data: result.rows[0] });
 });
+
+export const sendNoteEmailController = async (req: Request, res: Response, next: NextFunction) => {
+  
+  try {
+    const { user_id, note, title } = req.body;
+    
+    const info = await sendNoteToUser({ userId: user_id, note, title });
+    res.status(200).json({ message: "Email sent successfully", info });
+  } catch (err) {
+    next(err);
+  }
+};

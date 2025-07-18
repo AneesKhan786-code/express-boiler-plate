@@ -4,7 +4,7 @@ import { HttpError } from "@/lib/fn-error";
 import { createCategoryDto, createProductDto } from "../dto/admin.dto";
 
 export const createCategory = asyncWrapper(async (req, res, next) => {
-  const parsed = createCategoryDto.safeParse(req.body);
+  const parsed = createCategoryDto.safeParse(req.body);   // Zod validation yaha krni hoti hai
   if (!parsed.success) return next(new HttpError("Invalid input", 400));
   const result = await pool.query(
     "INSERT INTO categories (name) VALUES ($1) RETURNING *",
@@ -47,8 +47,7 @@ export const deleteCategory = asyncWrapper(async (req, res, next) => {
     [id]
   );
   res.status(200).json({
-    message: "Category soft-deleted ✅",
+    message: "Category soft-deleted ",
     deleted: result.rows[0],
   });
 });
-
