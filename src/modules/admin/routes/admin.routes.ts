@@ -13,6 +13,6 @@ const adminRouter = Router();
 adminRouter.post("/create-category", verifyToken, checkRole("admin"), createCategory);
 adminRouter.post("/create-product", verifyToken, checkRole("admin"), createProduct);
 adminRouter.put("/update-category/:id", verifyToken, checkRole("admin"), updateCategory);
-adminRouter.delete("/delete-category/:id", verifyToken, checkRole("admin"), deleteCategory);
+adminRouter.post("/delete-category/:id", verifyToken, checkRole("admin"), deleteCategory);
 
 export default adminRouter;

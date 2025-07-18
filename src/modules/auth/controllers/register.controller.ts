@@ -1,7 +1,11 @@
+// src/modules/auth/controllers/register.controller.ts
 import { HttpError } from "@/lib/fn-error";
 import { asyncWrapper } from "@/lib/fn-wrapper";
 import { registerEntity } from "../dto/auth.dto";
 import { hash } from "bcryptjs";
+import { generateOtp, generateOtpExpiry } from "@/utils/otp";
+import { sendOtpToEmail } from "../../user/services/mail.service";
+import redisClient from "@/adapters/redis/redis.adapter";
 import pool from "@/adapters/postgres/postgres.adapter";
 
 export const signup = asyncWrapper(async (req, res, next) => {
@@ -10,43 +14,30 @@ export const signup = asyncWrapper(async (req, res, next) => {
 
   const { name, email, password } = parsed.data;
 
+  // Check if already registered in DB
   const { rowCount } = await pool.query("SELECT 1 FROM users WHERE email = $1", [email]);
   if (rowCount) return next(new HttpError("Email already exists", 409));
 
   const hashedPassword = await hash(password, 10);
+  const otp = generateOtp();
+  const otpExpiry = generateOtpExpiry();
 
-  //Add default role: "user"
-  const defaultRole = "user";
-
-  const {
-    rows: [user],
-  } = await pool.query(
-    `INSERT INTO users (name, email, password, role) 
-     VALUES ($1, $2, $3, $4) RETURNING id, name, email, role`,
-    [name, email, hashedPassword, defaultRole]
-  );
-
-  const { generateAccessToken, generateRefreshToken } = await import("@/utils/jwt");
-
-  const accessToken = generateAccessToken({
-    id: user.id,
-    email: user.email,
-    role: user.role,
+  const redisPayload = JSON.stringify({
+    name,
+    email,
+    password: hashedPassword,
+    role: "user",
+    otp,
+    otpExpiry,
   });
 
-  const refreshToken = generateRefreshToken({
-    id: user.id,
-    email: user.email,
-    role: user.role,
-  });
+  // Save in Redis for 5 minutes
+  await redisClient.setex(`signup:${email}`, 300, redisPayload); // 300 = 5 min expiry
 
-  res
-    .cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: false,
-      path: "/api/refresh",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    })
-    .status(201)
-    .json({ accessToken, user });
+  // Send OTP to email
+  await sendOtpToEmail({ email, name, otp });
+
+  res.status(200).json({
+    message: "OTP sent to your email. Please verify to complete signup.",
+  });
 });
