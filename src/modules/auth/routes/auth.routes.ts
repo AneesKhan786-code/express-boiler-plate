@@ -9,11 +9,12 @@ import { login } from "../controllers/login.controller";
 import { verifyOtpController } from "../controllers/verifyOtp.controller";
 import { verifyOtpSchema } from "../dto/verify.dto";
 import { resendOtpController } from "../controllers/resendOtp.controller";
+import { verifyLoginOtp } from "../controllers/verifyLoginOtp.controller";
 
 const authRouter = Router();
 
 // Signup Route
-authRouter.post("/signup", validator(registerEntity), signup);
+// authRouter.post("/signup", validator(registerEntity), signup);
 
 //Verify Otp route
 authRouter.post("/verify-otp", validator(verifyOtpSchema),verifyOtpController);
@@ -29,5 +30,9 @@ authRouter.get("/protected", protect, protectedRoute);
 
 // login routes
 authRouter.post("/login", login);
+
+//
+authRouter.post("/verify-login-otp", verifyLoginOtp);
+
 
 export { authRouter };
