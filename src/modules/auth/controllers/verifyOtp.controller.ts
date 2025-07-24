@@ -19,7 +19,6 @@ export const verifyOtpController = asyncWrapper(async (req: Request, res: Respon
   const expiry = new Date(userData.otpExpiry);
   if (now > expiry) return next(new HttpError("OTP expired", 400));
 
-  // Insert into DB
   const {
     rows: [user],
   } = await pool.query(
@@ -29,7 +28,6 @@ export const verifyOtpController = asyncWrapper(async (req: Request, res: Respon
     [userData.name, userData.email, userData.password, userData.role, true]
   );
 
-  // Remove OTP from Redis
   await redisClient.del(`signup:${email}`);
 
   const payload = {
@@ -46,7 +44,7 @@ export const verifyOtpController = asyncWrapper(async (req: Request, res: Respon
       httpOnly: true,
       secure: false,
       path: "/api/refresh",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000, 
     })
     .status(200)
     .json({

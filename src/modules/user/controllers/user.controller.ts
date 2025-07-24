@@ -6,7 +6,7 @@ import { asyncWrapper } from "@/lib/fn-wrapper";
 import pool from "@/adapters/postgres/postgres.adapter";
 import { sendNoteToUser } from '../services/mail.service';
 
-// // ✅ Create User - Save into `users`
+// //  Create User - Save into `users`
 // export const createUser = asyncWrapper(async (req: Request, res: Response, next) => {
 //   const parsed = createUserDto.safeParse(req.body);
 //   if (!parsed.success) return next(new HttpError("Invalid input", 400));
@@ -28,7 +28,7 @@ import { sendNoteToUser } from '../services/mail.service';
 //   res.status(201).json({ message: "User created successfully", user });
 // });
 
-// ✅ Get Job & Today's Expense using subqueries from `users`
+// Get Job & Today's Expense using subqueries from `users`
 export const getUserJobAndTodayExpense = asyncWrapper(async (req: Request, res: Response, next) => {
   const userId = (req as any).user.id;
 

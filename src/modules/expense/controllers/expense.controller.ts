@@ -3,7 +3,6 @@ import { asyncWrapper } from "@/lib/fn-wrapper";
 import { createExpenseDto } from "../dto/expense.dto";
 import pool from "@/adapters/postgres/postgres.adapter";
 
-// Create Expense
 export const createExpense = asyncWrapper(async (req: Request, res: Response) => {
   const parsed = createExpenseDto.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input" });
@@ -19,7 +18,6 @@ export const createExpense = asyncWrapper(async (req: Request, res: Response) =>
   res.status(201).json({ message: "Expense recorded", expense });
 });
 
-// Get All (Non-deleted) Expenses for User
 export const getExpenses = asyncWrapper(async (req: Request, res: Response) => {
   const userId = (req as any).user.id;
 
@@ -31,7 +29,6 @@ export const getExpenses = asyncWrapper(async (req: Request, res: Response) => {
   res.status(200).json({ expenses });
 });
 
-// Get Single Expense (if not deleted)
 export const getExpenseById = asyncWrapper(async (req: Request, res: Response) => {
   const userId = (req as any).user.id;
   const { id } = req.params;
@@ -46,7 +43,6 @@ export const getExpenseById = asyncWrapper(async (req: Request, res: Response) =
   res.status(200).json({ expense });
 });
 
-// Update Expense (if not deleted)
 export const updateExpense = asyncWrapper(async (req: Request, res: Response) => {
   const userId = (req as any).user.id;
   const { id } = req.params;
@@ -67,7 +63,6 @@ export const updateExpense = asyncWrapper(async (req: Request, res: Response) =>
   res.status(200).json({ message: "Expense updated", updatedExpense });
 });
 
-// Soft Delete Expense (set deleted = true)
 export const deleteExpense = asyncWrapper(async (req: Request, res: Response) => {
   const userId = (req as any).user.id;
   const { id } = req.params;

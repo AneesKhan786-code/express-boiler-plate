@@ -1,31 +1,40 @@
 import { Router } from "express";
-import { getUserJobAndTodayExpense , sendNoteEmailController } from "../controllers/user.controller";
-import { getCategories , getProductsByCategory } from "@/modules/category/controllers/category.controller";
-import { createExpense, getExpenseById, getExpenses, updateExpense, deleteExpense} from "../../expense/controllers/expense.controller";
+import {
+  getUserJobAndTodayExpense,
+  sendNoteEmailController,
+} from "../controllers/user.controller";
+import {
+  getCategories,
+  getProductsByCategory,
+} from "@/modules/category/controllers/category.controller";
+import {
+  createExpense,
+  getExpenseById,
+  getExpenses,
+  updateExpense,
+  deleteExpense,
+} from "../../expense/controllers/expense.controller";
 import { protect } from "../../../shared/middleware/auth.middleware";
+import { checkRole } from "@/shared/middleware/rbac.middleware";
 import { getMyJob } from "@/modules/jobs/controllers/jobs.controller";
 
 const router = Router();
 
-// Sub-Query
-router.get("/job-expense", protect, getUserJobAndTodayExpense);
+router.use(protect, checkRole("user"));
 
-// Send Mail
-router.post("/send-email", sendNoteEmailController);
-
-//  Expense (CRUD)
-router.post("/create-expense", protect, createExpense);
-router.get("/my-expenses", protect, getExpenses);
-router.get("/expense/:id", protect, getExpenseById);
-router.put("/update-expense/:id", protect, updateExpense);
-router.post("/delete-expense/:id", protect, deleteExpense);
-
-// User/public can only "view"
 router.get("/categories", getCategories);
 router.get("/categories/products/:id", getProductsByCategory);
 
+router.get("/job-expense", getUserJobAndTodayExpense);//Sub-Query
 
-// ✅ User Route: See their own job only
-router.get("/my-job", protect, getMyJob);
+router.post("/send-email", sendNoteEmailController);
+
+router.post("/create-expense", createExpense);
+router.get("/my-expenses", getExpenses);
+router.get("/expense/:id", getExpenseById);
+router.put("/update-expense/:id", updateExpense);
+router.post("/delete-expense/:id", deleteExpense);
+
+router.get("/my-job", getMyJob);
 
 export default router;

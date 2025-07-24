@@ -13,26 +13,16 @@ import { verifyLoginOtp } from "../controllers/verifyLoginOtp.controller";
 
 const authRouter = Router();
 
-// Signup Route
-// authRouter.post("/signup", validator(registerEntity), signup);
-
-//Verify Otp route
 authRouter.post("/verify-otp", validator(verifyOtpSchema),verifyOtpController);
-
-//Resend Otp route 
+ 
 authRouter.post("/resend-otp", resendOtpController);
 
-// Refresh Token Route
 authRouter.get("/refresh", refresh);
 
-// Protected Route (needs access token)
 authRouter.get("/protected", protect, protectedRoute);
 
-// login routes
 authRouter.post("/login", login);
 
-//
 authRouter.post("/verify-login-otp", verifyLoginOtp);
-
 
 export { authRouter };

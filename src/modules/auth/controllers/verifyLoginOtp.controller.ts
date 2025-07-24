@@ -17,7 +17,6 @@ export const verifyLoginOtp = asyncWrapper(async (req: Request, res: Response, n
   if (otp !== correctOtp) return next(new HttpError("Incorrect OTP", 400));
   if (new Date() > new Date(otpExpiry)) return next(new HttpError("OTP expired", 400));
 
-  // Mark user as verified in DB
   await pool.query(`UPDATE users SET verified = true WHERE email = $1`, [normalizedEmail]);
   await redisClient.del(`login-otp:${normalizedEmail}`);
 
@@ -32,7 +31,7 @@ export const verifyLoginOtp = asyncWrapper(async (req: Request, res: Response, n
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: false, // 🔒 Set to true in production
+    secure: false, 
     path: "/api/refresh",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });

@@ -19,25 +19,22 @@ import { getExpenses } from "@/modules/expense/controllers/expense.controller";
 
 const router = Router();
 
-//  Category Routes
-router.post("/create-category", protect, checkRole("admin"), createCategory);
-router.put("/update-category/:id", protect, checkRole("admin"), updateCategory);
-router.post("/delete-category/:id", protect, checkRole("admin"), deleteCategory);
+router.use(protect, checkRole("admin"));
 
-//  Product Routes
-router.post("/create-product", protect, checkRole("admin"), createProduct);
-router.put("/update-product/:id", protect, checkRole("admin"), updateProduct);
-router.post("/delete-product/:id", protect, checkRole("admin"), deleteProduct);
+router.post("/create-category", createCategory);
+router.put("/update-category/:id", updateCategory);
+router.post("/delete-category/:id", deleteCategory);
 
-//  View Routes (admin also users)
-router.get("/categories", protect, getCategories);
-router.get("/categories/products/:id", protect, getProductsByCategory);
+router.post("/create-product", createProduct);
+router.put("/update-product/:id", updateProduct);
+router.post("/delete-product/:id", deleteProduct);
 
-// Admin create user + job
-router.post("/create-user", protect, checkRole("admin"), createUserByAdmin);
-router.post("/create-job", protect, checkRole("admin"), createJob);
+router.get("/categories", getCategories); 
+router.get("/categories/products/:id", getProductsByCategory);
 
-//admin can view expenses also
-router.get("/expenses", protect, getExpenses);
+router.post("/create-user", createUserByAdmin);
+router.post("/create-job", createJob);
+
+router.get("/expenses", getExpenses);
 
 export default router;

@@ -7,4 +7,3 @@ export const asyncWrapper = (
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 };
-

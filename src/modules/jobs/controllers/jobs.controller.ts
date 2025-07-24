@@ -3,7 +3,6 @@ import { asyncWrapper } from "@/lib/fn-wrapper";
 import { createJobDto, updateJobDto } from "../dto/jobs.dto";
 import pool from "@/adapters/postgres/postgres.adapter";
 
-// ✅ Create Job (admin can create for any user)
 export const createJob = asyncWrapper(async (req: Request, res: Response) => {
   const parsed = createJobDto.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input" });
@@ -13,7 +12,6 @@ export const createJob = asyncWrapper(async (req: Request, res: Response) => {
 
   let targetUserId = loggedInUser.id;
 
-  // 👇 Admin can create for other users
   if (loggedInUser.role === "admin" && user_id) {
     targetUserId = user_id;
   }
@@ -28,7 +26,6 @@ export const createJob = asyncWrapper(async (req: Request, res: Response) => {
   res.status(201).json({ message: "Job created successfully", job });
 });
 
-// ✅ Get All Jobs
 export const getAllJobs = asyncWrapper(async (_req: Request, res: Response) => {
   const { rows: jobs } = await pool.query(
     `SELECT * FROM jobs WHERE is_deleted = FALSE ORDER BY created_at DESC`
@@ -36,7 +33,6 @@ export const getAllJobs = asyncWrapper(async (_req: Request, res: Response) => {
   res.status(200).json({ jobs });
 });
 
-// ✅ Get Job by ID
 export const getJobById = asyncWrapper(async (req: Request, res: Response) => {
   const { id } = req.params;
   const {
@@ -50,7 +46,6 @@ export const getJobById = asyncWrapper(async (req: Request, res: Response) => {
   res.status(200).json({ job });
 });
 
-// ✅ Get My Job
 export const getMyJob = asyncWrapper(async (req: Request, res: Response) => {
   const userId = (req as any).user.id;
   const {
@@ -64,7 +59,6 @@ export const getMyJob = asyncWrapper(async (req: Request, res: Response) => {
   res.status(200).json({ job });
 });
 
-// ✅ Update Job
 export const updateJob = asyncWrapper(async (req: Request, res: Response) => {
   const { id } = req.params;
   const parsed = updateJobDto.safeParse(req.body);
@@ -84,7 +78,6 @@ export const updateJob = asyncWrapper(async (req: Request, res: Response) => {
   res.status(200).json({ message: "Job updated", job });
 });
 
-// ✅ Soft Delete Job
 export const deleteJob = asyncWrapper(async (req: Request, res: Response) => {
   const { id } = req.params;
 

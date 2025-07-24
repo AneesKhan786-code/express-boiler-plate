@@ -5,7 +5,6 @@ import { createCategoryDto, createProductDto } from "../dto/admin.dto";
 import { hash } from "bcryptjs";
 import { sendUserCredentials } from "@/modules/user/services/mail.service";
 
-// Create Category
 export const createCategory = asyncWrapper(async (req, res, next) => {
   const parsed = createCategoryDto.safeParse(req.body);
   if (!parsed.success) return next(new HttpError("Invalid input", 400));
@@ -18,7 +17,6 @@ export const createCategory = asyncWrapper(async (req, res, next) => {
   res.status(201).json({ category: result.rows[0] });
 });
 
-// Create Product
 export const createProduct = asyncWrapper(async (req, res, next) => {
   const parsed = createProductDto.safeParse(req.body);
   if (!parsed.success) return next(new HttpError("Invalid input", 400));
@@ -33,7 +31,6 @@ export const createProduct = asyncWrapper(async (req, res, next) => {
   res.status(201).json({ product: result.rows[0] });
 });
 
-// Update Category
 export const updateCategory = asyncWrapper(async (req, res, next) => {
   const { id } = req.params;
   const { name } = req.body;
@@ -48,7 +45,6 @@ export const updateCategory = asyncWrapper(async (req, res, next) => {
   res.status(200).json({ category: result.rows[0] });
 });
 
-// Soft Delete Category
 export const deleteCategory = asyncWrapper(async (req, res, next) => {
   const { id } = req.params;
 
@@ -71,7 +67,6 @@ export const deleteCategory = asyncWrapper(async (req, res, next) => {
   });
 });
 
-// Update Product
 export const updateProduct = asyncWrapper(async (req, res, next) => {
   const { id } = req.params;
   const { name, price, category_id } = req.body;
@@ -86,7 +81,6 @@ export const updateProduct = asyncWrapper(async (req, res, next) => {
   res.status(200).json({ product: result.rows[0] });
 });
 
-// Soft Delete Product
 export const deleteProduct = asyncWrapper(async (req, res, next) => {
   const { id } = req.params;
 
@@ -106,7 +100,6 @@ export const deleteProduct = asyncWrapper(async (req, res, next) => {
   res.status(200).json({ message: "Product soft-deleted", deleted: result.rows[0] });
 });
 
-// Create User by Admin + Email Password
 export const createUserByAdmin = asyncWrapper(async (req, res, next) => {
   const { name, email, password } = req.body;
 

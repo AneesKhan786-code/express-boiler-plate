@@ -9,7 +9,6 @@ import { sendOtpToEmail } from "../../user/services/mail.service";
 import { generateOtp } from "@/utils/otp";
 import { generateAccessToken, generateRefreshToken } from "@/utils/jwt";
 
-// ✅ LOGIN CONTROLLER
 export const login = asyncWrapper(async (req: Request, res: Response, next: NextFunction) => {
   const parsed = loginEntity.safeParse(req.body);
   if (!parsed.success) {
@@ -35,7 +34,6 @@ export const login = asyncWrapper(async (req: Request, res: Response, next: Next
     return next(new HttpError("Invalid credentials", 401));
   }
 
-  // 🔐 Send OTP if not verified
   if (!user.verified) {
     const otp = generateOtp();
     const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 min
@@ -62,7 +60,6 @@ export const login = asyncWrapper(async (req: Request, res: Response, next: Next
     });
   }
 
-  // ✅ Already verified → Issue tokens
   const payload = {
     id: user.id,
     email: user.email,
@@ -74,7 +71,7 @@ export const login = asyncWrapper(async (req: Request, res: Response, next: Next
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: false, // ✅ set to true in production
+    secure: false, 
     path: "/api/refresh",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
