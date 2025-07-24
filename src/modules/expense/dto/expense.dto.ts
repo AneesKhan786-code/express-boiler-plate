@@ -1,4 +1,3 @@
-// ✅ Correct DTO: DO NOT ask for user_id from body
 import { z } from "zod";
 
 export const createExpenseDto = z.object({

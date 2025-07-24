@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const createCategoryDto = z.object({
-  name: z.string().min(2)
+  name: z.string().trim().min(2).max(100)
 });
 
 export const createProductDto = z.object({

@@ -1,4 +1,3 @@
-// src/shared/middleware/rbac.middleware.ts
 import { Request, Response, NextFunction } from "express";
 import { HttpError } from "@/lib/fn-error";
 

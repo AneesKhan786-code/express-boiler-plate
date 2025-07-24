@@ -1,4 +1,3 @@
-// will add redis part here when we are close to caching topics
 import Redis from "ioredis";
 
 const redisClient = new Redis({

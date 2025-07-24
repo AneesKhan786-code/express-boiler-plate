@@ -13,7 +13,8 @@ export const protect = (req: Request, res: Response, next: NextFunction) => {
   const token = header.split(" ")[1];
 
   try {
-    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!);
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET!);
+
     if (typeof decoded !== "object" || decoded === null) {
       return next(new HttpError("Invalid token payload", 403));
     }

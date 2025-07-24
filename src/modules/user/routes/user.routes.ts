@@ -1,11 +1,40 @@
 import { Router } from "express";
-import { createUser, getUserJobAndTodayExpense } from "../controllers/user.controller";
-import { protect } from "../../../shared/middleware/auth.middleware"; // JWT middleware
-import { sendNoteEmailController } from '../controllers/user.controller';
+import {
+  getUserJobAndTodayExpense,
+  sendNoteEmailController,
+} from "../controllers/user.controller";
+import {
+  getCategories,
+  getProductsByCategory,
+} from "@/modules/category/controllers/category.controller";
+import {
+  createExpense,
+  getExpenseById,
+  getExpenses,
+  updateExpense,
+  deleteExpense,
+} from "../../expense/controllers/expense.controller";
+import { protect } from "../../../shared/middleware/auth.middleware";
+import { checkRole } from "@/shared/middleware/rbac.middleware";
+import { getMyJob } from "@/modules/jobs/controllers/jobs.controller";
+
 const router = Router();
 
-router.post("/", createUser); // Signup route
-router.get("/job-expense", protect, getUserJobAndTodayExpense); // Protected route
-router.post("/send-note", sendNoteEmailController); 
+router.use(protect, checkRole("user"));
+
+router.get("/categories", getCategories);
+router.get("/categories/products/:id", getProductsByCategory);
+
+router.get("/job-expense", getUserJobAndTodayExpense);//Sub-Query
+
+router.post("/send-email", sendNoteEmailController);
+
+router.post("/create-expense", createExpense);
+router.get("/my-expenses", getExpenses);
+router.get("/expense/:id", getExpenseById);
+router.put("/update-expense/:id", updateExpense);
+router.post("/delete-expense/:id", deleteExpense);
+
+router.get("/my-job", getMyJob);
 
 export default router;

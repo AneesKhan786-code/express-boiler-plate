@@ -14,7 +14,6 @@ export const signup = asyncWrapper(async (req, res, next) => {
 
   const { name, email, password } = parsed.data;
 
-  // Check if already registered in DB
   const { rowCount } = await pool.query("SELECT 1 FROM users WHERE email = $1", [email]);
   if (rowCount) return next(new HttpError("Email already exists", 409));
 
@@ -31,10 +30,8 @@ export const signup = asyncWrapper(async (req, res, next) => {
     otpExpiry,
   });
 
-  // Save in Redis for 5 minutes
   await redisClient.setex(`signup:${email}`, 300, redisPayload); // 300 = 5 min expiry
 
-  // Send OTP to email
   await sendOtpToEmail({ email, name, otp });
 
   res.status(200).json({

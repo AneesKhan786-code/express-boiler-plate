@@ -1,18 +1,40 @@
 import { Router } from "express";
 import {
   createCategory,
-  createProduct,
   updateCategory,
   deleteCategory,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  createUserByAdmin,
 } from "../controllers/admin.controller";
-import { protect as verifyToken  } from "@/shared/middleware/auth.middleware";
+import {
+  getCategories,
+  getProductsByCategory,
+} from "../../category/controllers/category.controller";
+import { protect } from "@/shared/middleware/auth.middleware";
 import { checkRole } from "@/shared/middleware/rbac.middleware";
+import { createJob } from "../../jobs/controllers/jobs.controller";
+import { getExpenses } from "@/modules/expense/controllers/expense.controller";
 
-const adminRouter = Router();
-// admin.routes.ts
-adminRouter.post("/create-category", verifyToken, checkRole("admin"), createCategory);
-adminRouter.post("/create-product", verifyToken, checkRole("admin"), createProduct);
-adminRouter.put("/update-category/:id", verifyToken, checkRole("admin"), updateCategory);
-adminRouter.post("/delete-category/:id", verifyToken, checkRole("admin"), deleteCategory);
+const router = Router();
 
-export default adminRouter;
+router.use(protect, checkRole("admin"));
+
+router.post("/create-category", createCategory);
+router.put("/update-category/:id", updateCategory);
+router.post("/delete-category/:id", deleteCategory);
+
+router.post("/create-product", createProduct);
+router.put("/update-product/:id", updateProduct);
+router.post("/delete-product/:id", deleteProduct);
+
+router.get("/categories", getCategories); 
+router.get("/categories/products/:id", getProductsByCategory);
+
+router.post("/create-user", createUserByAdmin);
+router.post("/create-job", createJob);
+
+router.get("/expenses", getExpenses);
+
+export default router;
