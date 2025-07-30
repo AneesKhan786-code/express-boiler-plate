@@ -1,19 +1,35 @@
 import { Request, Response } from "express";
-import pool from "@/adapters/postgres/postgres.adapter";
+import { db } from "@/db/drizzle";
+import { categories } from "@/db/schema/categories";
+import { products } from "@/db/schema/products";
+import { eq, and } from "drizzle-orm";
 import { asyncWrapper } from "@/lib/fn-wrapper";
 
-export const getCategories = asyncWrapper(async (_req, res) => {
-  const { rows } = await pool.query(
-    "SELECT * FROM categories WHERE deleted = false ORDER BY created_at DESC"
-  );
-  res.status(200).json({ categories: rows });
+// ✅ GET All Categories (not deleted)
+export const getCategories = asyncWrapper(async (_req: Request, res: Response) => {
+  const result = await db
+    .select()
+    .from(categories)
+    .where(eq(categories.deleted, false))
+    .orderBy(categories.createdAt);
+    
+  res.status(200).json({ categories: result });
 });
 
-export const getProductsByCategory = asyncWrapper(async (req, res) => {
+// ✅ GET Products by Category ID (not deleted)
+export const getProductsByCategory = asyncWrapper(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { rows } = await pool.query(
-    "SELECT * FROM products WHERE category_id = $1 AND deleted = false",
-    [id]
-  );
-  res.status(200).json({ products: rows });
+  const categoryId = Number(id); // 👈 Convert string to number
+
+  const result = await db
+    .select()
+    .from(products)
+    .where(
+      and(
+        eq(products.categoryId, categoryId),
+        eq(products.deleted, false)
+      )
+    );
+
+  res.status(200).json({ products: result });
 });

@@ -1,5 +1,7 @@
 import { transporter } from '@/utils/email';
-import pool from '@/adapters/postgres/postgres.adapter';
+import { db } from '@/db/drizzle'; // ✅ Drizzle instance use kar rahe hain
+import { users } from '@/db/schema/users'; // ✅ your drizzle schema
+import { eq } from 'drizzle-orm';
 
 interface SendOtpInput {
   email: string;
@@ -13,7 +15,7 @@ interface SendNoteEmailInput {
   title: string;
 }
 
-// Ye function signup ke time call hota hai email verification OTP bhejne ke liye.
+// ✅ 1. Send OTP during signup
 export const sendOtpToEmail = async ({ email, name, otp }: SendOtpInput) => {
   return await transporter.sendMail({
     from: process.env.MAIL_USER,
@@ -23,10 +25,13 @@ export const sendOtpToEmail = async ({ email, name, otp }: SendOtpInput) => {
   });
 };
 
-// Ye function kisi bhi verified user ko custom message (note) bhejne ke liye use hota hai.
+// ✅ 2. Send note to verified user using Drizzle
 export const sendNoteToUser = async ({ userId, note, title }: SendNoteEmailInput) => {
-  const userRes = await pool.query("SELECT name, email FROM users WHERE id = $1", [userId]);
-  const user = userRes.rows[0];
+  const result = await db.select({ name: users.name, email: users.email })
+    .from(users)
+    .where(eq(users.id, userId));
+
+  const user = result[0];
   if (!user) throw new Error("User not found");
 
   const mailOptions = {
@@ -40,7 +45,7 @@ export const sendNoteToUser = async ({ userId, note, title }: SendNoteEmailInput
   return info;
 };
 
-// Ye function admin ke through create hone wale naye users ko unki login credentials bhejne ke liye use hota hai.
+// ✅ 3. Send login credentials to newly created user
 interface SendUserCredentialsInput {
   name: string;
   email: string;

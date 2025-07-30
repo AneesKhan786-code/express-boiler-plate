@@ -1,14 +1,18 @@
+// ✅ Imports
 import { Request, Response, NextFunction } from "express";
 import { compare } from "bcryptjs";
 import { asyncWrapper } from "@/lib/fn-wrapper";
 import { HttpError } from "@/lib/fn-error";
 import { loginEntity } from "../dto/auth.dto";
-import pool from "@/adapters/postgres/postgres.adapter";
 import redisClient from "@/adapters/redis/redis.adapter";
 import { sendOtpToEmail } from "../../user/services/mail.service";
 import { generateOtp } from "@/utils/otp";
 import { generateAccessToken, generateRefreshToken } from "@/utils/jwt";
+import { db } from "@/db/drizzle"; // ✅ Drizzle DB
+import { users } from "../../../db/schema/users"; // ✅ Your Drizzle schema (adjust path if needed)
+import { eq } from "drizzle-orm";
 
+// ✅ Login Controller
 export const login = asyncWrapper(async (req: Request, res: Response, next: NextFunction) => {
   const parsed = loginEntity.safeParse(req.body);
   if (!parsed.success) {
@@ -18,16 +22,17 @@ export const login = asyncWrapper(async (req: Request, res: Response, next: Next
   const { email, password } = parsed.data;
   const normalizedEmail = email.toLowerCase();
 
-  const result = await pool.query(
-    "SELECT id, name, email, password, role, verified FROM users WHERE email = $1",
-    [normalizedEmail]
-  );
+  // ✅ Drizzle Query
+  const result = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, normalizedEmail));
 
-  if (result.rows.length === 0) {
+  if (result.length === 0) {
     return next(new HttpError("User not found", 404));
   }
 
-  const user = result.rows[0];
+  const user = result[0];
 
   const isMatch = await compare(password, user.password);
   if (!isMatch) {
@@ -76,8 +81,7 @@ export const login = asyncWrapper(async (req: Request, res: Response, next: Next
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  delete user.password;
-
+  delete (user as any).password;
   res.status(200).json({
     accessToken,
     user,
