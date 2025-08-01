@@ -1,4 +1,3 @@
-// services/admin.service.ts
 import { db } from "@/db/drizzle";
 import { sql } from "drizzle-orm";
 import { fillMissingMonths } from "@/utils/helper";
@@ -20,9 +19,19 @@ export const getDashboardDataService = async (year: number) => {
     `
   );
 
-  const totalActivity = await db.execute (
-    sql`SELECT `
-  )
+  // Format data with helper
+  const monthlyData = fillMissingMonths(result.rows, year);
 
-  return fillMissingMonths(result.rows, year);
+  // Calculate totals
+  const totalExpenses = monthlyData.reduce((sum, item) => sum + item.expenses, 0);
+  const totalProducts = monthlyData.reduce((sum, item) => sum + item.products, 0);
+
+  // Add summary object to end
+  return [
+    ...monthlyData,
+    {
+      totalExpenses,
+      totalProducts,
+    },
+  ];
 };
