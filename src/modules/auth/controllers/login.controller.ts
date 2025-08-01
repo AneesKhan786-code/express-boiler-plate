@@ -7,7 +7,7 @@ import { loginEntity } from "../dto/auth.dto";
 import redisClient from "@/adapters/redis/redis.adapter";
 import { sendOtpToEmail } from "../../user/services/mail.service";
 import { generateOtp } from "@/utils/otp";
-import { generateAccessToken, generateRefreshToken } from "@/utils/jwt";
+import { generateAccessToken, generateRefreshToken } from "../../../utils/jwt";
 import { db } from "@/db/drizzle"; // ✅ Drizzle DB
 import { users } from "../../../db/schema/users"; // ✅ Your Drizzle schema (adjust path if needed)
 import { eq } from "drizzle-orm";

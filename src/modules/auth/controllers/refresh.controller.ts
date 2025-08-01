@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { generateAccessToken, generateRefreshToken } from "@/utils/jwt";
+import { generateAccessToken, generateRefreshToken } from "../../../utils/jwt";
 import { HttpError } from "@/lib/fn-error";
 import { asyncWrapper } from "@/lib/fn-wrapper";
 import { MyJwtPayload } from "@/types/jwt-payload";
