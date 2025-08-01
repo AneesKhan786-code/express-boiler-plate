@@ -1,7 +1,10 @@
 import { Request, Response } from "express";
 import { asyncWrapper } from "@/lib/fn-wrapper";
 import { createJobDto, updateJobDto } from "../dto/jobs.dto";
-import pool from "@/adapters/postgres/postgres.adapter";
+import { db } from "@/db/drizzle";
+import { jobs } from "@/db/schema/jobs";
+import { eq, and, desc } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 
 export const createJob = asyncWrapper(async (req: Request, res: Response) => {
   const parsed = createJobDto.safeParse(req.body);
@@ -11,36 +14,39 @@ export const createJob = asyncWrapper(async (req: Request, res: Response) => {
   const loggedInUser = (req as any).user;
 
   let targetUserId = loggedInUser.id;
-
   if (loggedInUser.role === "admin" && user_id) {
     targetUserId = user_id;
   }
 
-  const {
-    rows: [job],
-  } = await pool.query(
-    `INSERT INTO jobs (user_id, title, salary) VALUES ($1, $2, $3) RETURNING *`,
-    [targetUserId, title, salary]
-  );
+  const [job] = await db
+    .insert(jobs)
+    .values({
+      title,
+      salary,
+      userId: targetUserId,
+    })
+    .returning();
 
   res.status(201).json({ message: "Job created successfully", job });
 });
 
-export const getAllJobs = asyncWrapper(async (_req: Request, res: Response) => {
-  const { rows: jobs } = await pool.query(
-    `SELECT * FROM jobs WHERE is_deleted = FALSE ORDER BY created_at DESC`
-  );
-  res.status(200).json({ jobs });
+export const getAllJobs = asyncWrapper(async (_req, res) => {
+  const result = await db
+    .select()
+    .from(jobs)
+    .where(eq(jobs.isDeleted, false))
+    .orderBy(desc(jobs.createdAt));
+
+  res.status(200).json({ jobs: result });
 });
 
 export const getJobById = asyncWrapper(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const {
-    rows: [job],
-  } = await pool.query(
-    `SELECT * FROM jobs WHERE id = $1 AND is_deleted = FALSE`,
-    [id]
-  );
+
+  const [job] = await db
+    .select()
+    .from(jobs)
+    .where(and(eq(jobs.id, id), eq(jobs.isDeleted, false)));
 
   if (!job) return res.status(404).json({ error: "Job not found" });
   res.status(200).json({ job });
@@ -48,12 +54,13 @@ export const getJobById = asyncWrapper(async (req: Request, res: Response) => {
 
 export const getMyJob = asyncWrapper(async (req: Request, res: Response) => {
   const userId = (req as any).user.id;
-  const {
-    rows: [job],
-  } = await pool.query(
-    `SELECT * FROM jobs WHERE user_id = $1 AND is_deleted = FALSE ORDER BY created_at DESC LIMIT 1`,
-    [userId]
-  );
+
+  const [job] = await db
+    .select()
+    .from(jobs)
+    .where(and(eq(jobs.userId, userId), eq(jobs.isDeleted, false)))
+    .orderBy(desc(jobs.createdAt))
+    .limit(1);
 
   if (!job) return res.status(404).json({ error: "No job found for this user" });
   res.status(200).json({ job });
@@ -66,12 +73,11 @@ export const updateJob = asyncWrapper(async (req: Request, res: Response) => {
 
   const { title, salary } = parsed.data;
 
-  const {
-    rows: [job],
-  } = await pool.query(
-    `UPDATE jobs SET title = $1, salary = $2 WHERE id = $3 AND is_deleted = FALSE RETURNING *`,
-    [title, salary, id]
-  );
+  const [job] = await db
+    .update(jobs)
+    .set({ title, salary })
+    .where(and(eq(jobs.id, id), eq(jobs.isDeleted, false)))
+    .returning();
 
   if (!job) return res.status(404).json({ error: "Job not found or deleted" });
 
@@ -81,12 +87,11 @@ export const updateJob = asyncWrapper(async (req: Request, res: Response) => {
 export const deleteJob = asyncWrapper(async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const {
-    rows: [job],
-  } = await pool.query(
-    `UPDATE jobs SET is_deleted = TRUE WHERE id = $1 AND is_deleted = FALSE RETURNING *`,
-    [id]
-  );
+  const [job] = await db
+    .update(jobs)
+    .set({ isDeleted: true })
+    .where(and(eq(jobs.id, id), eq(jobs.isDeleted, false)))
+    .returning();
 
   if (!job) return res.status(404).json({ error: "Job not found or already deleted" });
 

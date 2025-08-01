@@ -1,121 +1,147 @@
-import pool from "@/adapters/postgres/postgres.adapter";
+import { Request, Response } from "express";
+import { eq } from "drizzle-orm";
+import { db } from "@/db/drizzle";
+import { users, products, categories } from "@/db/schema";
 import { asyncWrapper } from "@/lib/fn-wrapper";
 import { HttpError } from "@/lib/fn-error";
 import { createCategoryDto, createProductDto } from "../dto/admin.dto";
 import { hash } from "bcryptjs";
 import { sendUserCredentials } from "@/modules/user/services/mail.service";
+// controller/admin.controller.ts
+import { getDashboardDataService } from "../services/admin.service";
 
+export const getDashboardData = asyncWrapper(async (req: Request, res: Response) => {
+  const year = parseInt(req.query.year as string) || new Date().getFullYear();
+  const data = await getDashboardDataService(year);
+  res.status(200).json(data);
+});
+
+
+//  Create Category
 export const createCategory = asyncWrapper(async (req, res, next) => {
   const parsed = createCategoryDto.safeParse(req.body);
   if (!parsed.success) return next(new HttpError("Invalid input", 400));
 
-  const result = await pool.query(
-    "INSERT INTO categories (name) VALUES ($1) RETURNING *",
-    [parsed.data.name]
-  );
+  const [category] = await db.insert(categories).values({
+    name: parsed.data.name,
+  }).returning();
 
-  res.status(201).json({ category: result.rows[0] });
+  res.status(201).json({ category });
 });
 
+// Create Product
 export const createProduct = asyncWrapper(async (req, res, next) => {
   const parsed = createProductDto.safeParse(req.body);
   if (!parsed.success) return next(new HttpError("Invalid input", 400));
 
   const { name, price, category_id } = parsed.data;
 
-  const result = await pool.query(
-    "INSERT INTO products (name, price, category_id) VALUES ($1, $2, $3) RETURNING *",
-    [name, price, category_id]
-  );
+  const [product] = await db.insert(products).values({
+    name,
+    price,
+    categoryId: category_id,
+  }).returning();
 
-  res.status(201).json({ product: result.rows[0] });
+  res.status(201).json({ product });
 });
 
+// Update Category
 export const updateCategory = asyncWrapper(async (req, res, next) => {
-  const { id } = req.params;
+  const categoryId = req.params.id; // ✅ keep as string (UUID)
   const { name } = req.body;
 
-  const result = await pool.query(
-    "UPDATE categories SET name = $1 WHERE id = $2 RETURNING *",
-    [name, id]
-  );
+  const [category] = await db.update(categories)
+    .set({ name })
+    .where(eq(categories.id, categoryId))
+    .returning();
 
-  if (!result.rowCount) return next(new HttpError("Category not found", 404));
+  if (!category) return next(new HttpError("Category not found", 404));
 
-  res.status(200).json({ category: result.rows[0] });
+  res.status(200).json({ category });
 });
 
+
+// Soft Delete Category
 export const deleteCategory = asyncWrapper(async (req, res, next) => {
-  const { id } = req.params;
+  const categoryId = req.params.id; // ✅ UUID, no Number()
 
-  const { rowCount: checkCount } = await pool.query(
-    "SELECT 1 FROM categories WHERE id = $1 AND is_deleted = false",
-    [id]
-  );
+  const [existing] = await db.select().from(categories).where(eq(categories.id, categoryId));
 
-  if (!checkCount)
+  if (!existing || existing.deleted) // ✅ changed isDeleted → deleted
     return next(new HttpError("Category not found or already deleted", 404));
 
-  const result = await pool.query(
-    "UPDATE categories SET is_deleted = true WHERE id = $1 RETURNING *",
-    [id]
-  );
+  const [deleted] = await db.update(categories)
+    .set({ deleted: true }) // ✅ changed isDeleted → deleted
+    .where(eq(categories.id, categoryId))
+    .returning();
 
   res.status(200).json({
     message: "Category soft-deleted",
-    deleted: result.rows[0],
+    deleted,
   });
 });
 
+// Update Product
 export const updateProduct = asyncWrapper(async (req, res, next) => {
-  const { id } = req.params;
+  const productId = Number(req.params.id);
   const { name, price, category_id } = req.body;
 
-  const result = await pool.query(
-    "UPDATE products SET name = $1, price = $2, category_id = $3 WHERE id = $4 RETURNING *",
-    [name, price, category_id, id]
-  );
+  const [product] = await db.update(products)
+    .set({
+      name,
+      price,
+      categoryId: category_id,
+    })
+    .where(eq(products.id, productId))
+    .returning();
 
-  if (!result.rowCount) return next(new HttpError("Product not found", 404));
+  if (!product) return next(new HttpError("Product not found", 404));
 
-  res.status(200).json({ product: result.rows[0] });
+  res.status(200).json({ product });
 });
 
+
+//  Soft Delete Product
 export const deleteProduct = asyncWrapper(async (req, res, next) => {
-  const { id } = req.params;
+  const productId = Number(req.params.id); // this one is fine (number type)
 
-  const { rowCount } = await pool.query(
-    "SELECT 1 FROM products WHERE id = $1 AND is_deleted = false",
-    [id]
-  );
+  const [existing] = await db.select().from(products).where(eq(products.id, productId));
 
-  if (!rowCount)
+  if (!existing || existing.deleted) // ✅ fix isDeleted → deleted
     return next(new HttpError("Product not found or already deleted", 404));
 
-  const result = await pool.query(
-    "UPDATE products SET is_deleted = true WHERE id = $1 RETURNING *",
-    [id]
-  );
+  const [deleted] = await db.update(products)
+    .set({ deleted: true }) // ✅ fix isDeleted → deleted
+    .where(eq(products.id, productId))
+    .returning();
 
-  res.status(200).json({ message: "Product soft-deleted", deleted: result.rows[0] });
+  res.status(200).json({
+    message: "Product soft-deleted",
+    deleted,
+  });
 });
 
+//  Admin Creates User
 export const createUserByAdmin = asyncWrapper(async (req, res, next) => {
   const { name, email, password } = req.body;
 
   const hashedPassword = await hash(password, 10);
 
-  const existing = await pool.query("SELECT 1 FROM users WHERE email = $1", [email]);
-  if (existing.rowCount) return next(new HttpError("User already exists", 409));
+  const existing = await db.select().from(users).where(eq(users.email, email));
+  if (existing.length)
+    return next(new HttpError("User already exists", 409));
 
-  const {
-    rows: [user],
-  } = await pool.query(
-    `INSERT INTO users (id, name, email, password, role, verified)
-     VALUES (gen_random_uuid(), $1, $2, $3, $4, $5)
-     RETURNING id, name, email`,
-    [name, email, hashedPassword, "user", false]
-  );
+  const [user] = await db.insert(users).values({
+    name,
+    email,
+    password: hashedPassword,
+    role: "user",
+    verified: false,
+  }).returning({
+    id: users.id,
+    name: users.name,
+    email: users.email,
+  });
 
   await sendUserCredentials({ name, email, password });
 

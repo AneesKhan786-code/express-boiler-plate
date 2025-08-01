@@ -1,8 +1,11 @@
 import { Request, Response } from "express";
 import { asyncWrapper } from "@/lib/fn-wrapper";
 import { createExpenseDto } from "../dto/expense.dto";
-import pool from "@/adapters/postgres/postgres.adapter";
+import { db } from "@/db/drizzle";
+import { expenses } from "@/db/schema/expenses";
+import { eq, and, desc } from "drizzle-orm";
 
+//  CREATE Expense
 export const createExpense = asyncWrapper(async (req: Request, res: Response) => {
   const parsed = createExpenseDto.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input" });
@@ -10,39 +13,55 @@ export const createExpense = asyncWrapper(async (req: Request, res: Response) =>
   const { amount, description } = parsed.data;
   const userId = (req as any).user.id;
 
-  const { rows: [expense] } = await pool.query(
-    `INSERT INTO expenses (user_id, amount, description) VALUES ($1, $2, $3) RETURNING *`,
-    [userId, amount, description]
-  );
+  const [expense] = await db.insert(expenses).values({
+    userId,
+    amount: amount.toString(), // ✅ Ensure numeric field is passed as string
+    description,
+  }).returning();
 
   res.status(201).json({ message: "Expense recorded", expense });
 });
 
+//  GET Expenses
 export const getExpenses = asyncWrapper(async (req: Request, res: Response) => {
   const userId = (req as any).user.id;
 
-  const { rows: expenses } = await pool.query(
-    `SELECT * FROM expenses WHERE user_id = $1 AND deleted = FALSE ORDER BY created_at DESC`,
-    [userId]
-  );
+  const expenseList = await db
+    .select()
+    .from(expenses)
+    .where(
+      and(
+        eq(expenses.userId, userId),
+        eq(expenses.deleted, false)
+      )
+    )
+    .orderBy(desc(expenses.createdAt));
 
-  res.status(200).json({ expenses });
+  res.status(200).json({ expenses: expenseList });
 });
 
+//  GET Expense by ID
 export const getExpenseById = asyncWrapper(async (req: Request, res: Response) => {
   const userId = (req as any).user.id;
   const { id } = req.params;
 
-  const { rows: [expense] } = await pool.query(
-    `SELECT * FROM expenses WHERE id = $1 AND user_id = $2 AND deleted = FALSE`,
-    [id, userId]
-  );
+  const [expense] = await db
+    .select()
+    .from(expenses)
+    .where(
+      and(
+        eq(expenses.id, id),
+        eq(expenses.userId, userId),
+        eq(expenses.deleted, false)
+      )
+    );
 
   if (!expense) return res.status(404).json({ error: "Expense not found" });
 
   res.status(200).json({ expense });
 });
 
+//  UPDATE Expense
 export const updateExpense = asyncWrapper(async (req: Request, res: Response) => {
   const userId = (req as any).user.id;
   const { id } = req.params;
@@ -52,26 +71,39 @@ export const updateExpense = asyncWrapper(async (req: Request, res: Response) =>
 
   const { amount, description } = parsed.data;
 
-  const { rows: [updatedExpense] } = await pool.query(
-    `UPDATE expenses SET amount = $1, description = $2 
-     WHERE id = $3 AND user_id = $4 AND deleted = FALSE RETURNING *`,
-    [amount, description, id, userId]
-  );
+  const [updatedExpense] = await db
+    .update(expenses)
+    .set({ amount: amount.toString(), description }) // ✅ amount as string
+    .where(
+      and(
+        eq(expenses.id, id),
+        eq(expenses.userId, userId),
+        eq(expenses.deleted, false)
+      )
+    )
+    .returning();
 
   if (!updatedExpense) return res.status(404).json({ error: "Expense not found or deleted" });
 
   res.status(200).json({ message: "Expense updated", updatedExpense });
 });
 
+//  DELETE (soft) Expense
 export const deleteExpense = asyncWrapper(async (req: Request, res: Response) => {
   const userId = (req as any).user.id;
   const { id } = req.params;
 
-  const { rows: [deletedExpense] } = await pool.query(
-    `UPDATE expenses SET deleted = TRUE 
-     WHERE id = $1 AND user_id = $2 AND deleted = FALSE RETURNING *`,
-    [id, userId]
-  );
+  const [deletedExpense] = await db
+    .update(expenses)
+    .set({ deleted: true })
+    .where(
+      and(
+        eq(expenses.id, id),
+        eq(expenses.userId, userId),
+        eq(expenses.deleted, false)
+      )
+    )
+    .returning();
 
   if (!deletedExpense) return res.status(404).json({ error: "Expense not found or already deleted" });
 
