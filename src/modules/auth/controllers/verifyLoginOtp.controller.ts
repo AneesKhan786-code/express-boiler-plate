@@ -4,7 +4,7 @@ import { Request, Response, NextFunction } from "express";
 import { asyncWrapper } from "@/lib/fn-wrapper";
 import { HttpError } from "@/lib/fn-error";
 import redisClient from "@/adapters/redis/redis.adapter";
-import { generateAccessToken, generateRefreshToken } from "@/utils/jwt";
+import { generateAccessToken, generateRefreshToken } from "../../../utils/jwt";
 import { db } from "@/db/drizzle"; // ✅ drizzle instance
 import { users } from "@/db/schema/users"; // ✅ users schema
 import { eq } from "drizzle-orm"; // ✅ condition builder

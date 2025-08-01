@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-
+import 'module-alias/register';
 import baseRouter from "./modules/user/routes/base.routes"; // ✅ new
 import { authRouter } from "./modules/auth/routes/auth.routes";
 import userRouter from "./modules/user/routes/user.routes";
