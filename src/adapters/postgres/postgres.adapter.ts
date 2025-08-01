@@ -1,15 +1,14 @@
-import { Pool } from "pg";
-import dotenv from "dotenv";
+// import { Pool } from "pg";
+// import dotenv from "dotenv";
 
-dotenv.config(); 
+// dotenv.config();
 
-const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT),
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
+// const pool = new Pool({
+//   connectionString: "postgresql://postgres:W9zC38KyNYJHJEWk@db.jcxytblgvkhaxlakyeew.supabase.co:5432/postgres",
+//   ssl: {
+//     rejectUnauthorized: false,
+//   },
+// });
 
-
-export default pool;
+// export default pool;
+export default {};

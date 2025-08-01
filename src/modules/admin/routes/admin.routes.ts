@@ -7,6 +7,7 @@ import {
   updateProduct,
   deleteProduct,
   createUserByAdmin,
+  getDashboardData,
 } from "../controllers/admin.controller";
 import {
   getCategories,
@@ -36,5 +37,7 @@ router.post("/create-user", createUserByAdmin);
 router.post("/create-job", createJob);
 
 router.get("/expenses", getExpenses);
+
+router.get("/graph-data", getDashboardData); //for any year ?year=2023
 
 export default router;

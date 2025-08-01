@@ -1,16 +1,19 @@
+// src/server.ts
 import app from "./app";
-import pool from "./adapters/postgres/postgres.adapter";
+import { db } from "./db/drizzle";
+import { sql } from "drizzle-orm";
 
 const PORT = 4000;
 
-pool.connect()
-  .then(() => {
-    console.log(" PostgreSQL connected");
+(async () => {
+  try {
+    await db.execute(sql`SELECT 1`);
+    console.log(" PostgreSQL (notSupabase) connected");
     app.listen(PORT, () => {
       console.log(` Server running on http://localhost:${PORT}`);
     });
-  })
-  .catch((err: any) => {
+  } catch (err: any) {
     console.error(" Failed to connect to PostgreSQL:", err.message);
-    process.exit(1); 
-  });
+    process.exit(1);
+  }
+})();
