@@ -4,7 +4,6 @@ FROM node:20-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
 COPY package*.json ./
 
 # Install dependencies
@@ -19,5 +18,5 @@ RUN npm run build
 # Expose the app port
 EXPOSE 8000
 
-# Start the app
-CMD ["node", "build/server.js"]
+
+CMD ["sh", "-c", "npx drizzle-kit push:pg && npm run dev"]

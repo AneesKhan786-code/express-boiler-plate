@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { asyncWrapper } from "@/lib/fn-wrapper";
+import { asyncWrapper } from "../../../lib/fn-wrapper";
 import { createJobDto, updateJobDto } from "../dto/jobs.dto";
-import { db } from "@/db/drizzle";
-import { jobs } from "@/db/schema/jobs";
+import { db } from "../../../drizzle/db"
+import { jobs } from "../../../drizzle/schema/jobs";
 import { eq, and, desc } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 

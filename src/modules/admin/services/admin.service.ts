@@ -1,4 +1,4 @@
-import { db } from "@/db/drizzle";
+import { db } from "../../../drizzle/db";
 import { sql } from "drizzle-orm";
 import { fillMissingMonths } from "@/utils/helper";
 

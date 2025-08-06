@@ -1,19 +1,19 @@
-import { HttpError } from "@/lib/fn-error";
-import { asyncWrapper } from "@/lib/fn-wrapper";
+import { HttpError } from "../../../lib/fn-error";
+import { asyncWrapper } from "../../../lib/fn-wrapper";
 import { registerEntity } from "../dto/auth.dto";
 import { hash } from "bcryptjs";
 import { generateOtp, generateOtpExpiry } from "@/utils/otp";
 import { sendOtpToEmail } from "../../user/services/mail.service";
 import redisClient from "@/adapters/redis/redis.adapter";
-import { db } from "@/db/drizzle";
-import { users } from "@/db/schema/users";
+import { db } from "../../../drizzle/db"
+import { users } from "../../../drizzle/schema/users";
 import { eq } from "drizzle-orm";
 
 export const signup = asyncWrapper(async (req, res, next) => {
-  const parsed = registerEntity.safeParse(req.body);
-  if (!parsed.success) return next(new HttpError("Invalid input", 400));
+  // const parsed = registerEntity.safeParse(req.body);
+  // if (!parsed.success) return next(new HttpError("Invalid input", 400));
 
-  const { name, email, password } = parsed.data;
+  const { name, email, password } = req.body;
 
   const existing = await db.select().from(users).where(eq(users.email, email));
   if (existing.length > 0)
@@ -27,7 +27,7 @@ export const signup = asyncWrapper(async (req, res, next) => {
     name,
     email,
     password: hashedPassword,
-    role: "user",
+    role: "admin", // only one time used signup for Admin
     otp,
     otpExpiry,
   });

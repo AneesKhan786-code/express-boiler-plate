@@ -5,6 +5,7 @@ services:
     build: .
     ports:
       - "4000:4000"
+    # `depends_on` now waits for both Postgres and Redis to be healthy before starting.
     depends_on:
       postgres:
         condition: service_healthy
@@ -16,13 +17,14 @@ services:
       - app-network
 
   postgres:
-    image: postgres:15
+    image: postgres:15-alpine
     restart: always
     environment:
       POSTGRES_DB: AuthData
       POSTGRES_USER: anees
-      POSTGRES_PASSWORD: User@1234
+      POSTGRES_PASSWORD: 1234
     healthcheck:
+      # Use `pg_isready` with the correct username and database.
       test: ["CMD-SHELL", "pg_isready -U anees -d AuthData"]
       interval: 5s
       timeout: 5s

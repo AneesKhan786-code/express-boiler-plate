@@ -1,17 +1,15 @@
-// src/modules/auth/controllers/verifyOtp.controller.ts
 import { Request, Response, NextFunction } from "express";
 import redisClient from "@/adapters/redis/redis.adapter";
-import { HttpError } from "@/lib/fn-error";
-import { asyncWrapper } from "@/lib/fn-wrapper";
+import { HttpError } from "../../../lib/fn-error";
+import { asyncWrapper } from "../../../lib/fn-wrapper";
 import { generateAccessToken, generateRefreshToken } from "../../../utils/jwt";
-import { db } from "@/db/drizzle"; // ✅ drizzle instance
-import { users } from "@/db/schema/users"; // ✅ users schema
-import { eq } from "drizzle-orm"; // ✅ for condition
+import {db} from "../../../drizzle/db"
+import { users } from "../../../drizzle/schema/users";
+import { eq } from "drizzle-orm"; 
 
 export const verifyOtpController = asyncWrapper(async (req: Request, res: Response, next: NextFunction) => {
   const { email, otp } = req.body;
 
-  // ✅ Step 1: OTP check from Redis
   const userDataRaw = await redisClient.get(`signup:${email}`);
   if (!userDataRaw) return next(new HttpError("OTP expired or not found", 404));
 
@@ -22,7 +20,6 @@ export const verifyOtpController = asyncWrapper(async (req: Request, res: Respon
   const expiry = new Date(userData.otpExpiry);
   if (now > expiry) return next(new HttpError("OTP expired", 400));
 
-  // ✅ Step 2: Insert into PostgreSQL using Drizzle ORM
   const [user] = await db
     .insert(users)
     .values({
@@ -38,10 +35,8 @@ export const verifyOtpController = asyncWrapper(async (req: Request, res: Respon
       role: users.role,
     });
 
-  // ✅ Step 3: Clear OTP from Redis
   await redisClient.del(`signup:${email}`);
 
-  // ✅ Step 4: Generate Tokens
   const payload = {
     id: user.id,
     email: user.email,
@@ -50,7 +45,6 @@ export const verifyOtpController = asyncWrapper(async (req: Request, res: Respon
   const accessToken = generateAccessToken(payload);
   const refreshToken = generateRefreshToken(payload);
 
-  // ✅ Step 5: Send Response
   res
     .cookie("refreshToken", refreshToken, {
       httpOnly: true,
