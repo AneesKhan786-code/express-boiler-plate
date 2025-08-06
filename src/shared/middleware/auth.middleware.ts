@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
-import { HttpError } from "@/lib/fn-error";
+import { HttpError } from "../../lib/fn-error";
 import { MyJwtPayload } from "@/types/jwt-payload";
 
 export const protect = (req: Request, res: Response, next: NextFunction) => {

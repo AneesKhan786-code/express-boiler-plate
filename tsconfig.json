@@ -13,5 +13,5 @@
     "skipLibCheck": true,
     "typeRoots": ["./src/types", "./node_modules/@types"]  
   },
-  "include": ["src"]
+  "include": ["src", "src/drizzle/schema/categories.ts", "src/drizzle/schema/expenses.ts", "src/drizzle/schema/jobs.ts", "src/drizzle/schema/products.ts", "src/drizzle/schema/users.ts"]
 }

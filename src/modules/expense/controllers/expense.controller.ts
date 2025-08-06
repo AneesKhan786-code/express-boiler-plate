@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { asyncWrapper } from "@/lib/fn-wrapper";
+import { asyncWrapper } from "../../../lib/fn-wrapper";
 import { createExpenseDto } from "../dto/expense.dto";
-import { db } from "@/db/drizzle";
-import { expenses } from "@/db/schema/expenses";
+import { db } from "../../../drizzle/db"
+import { expenses } from "../../../drizzle/schema/expenses";
 import { eq, and, desc } from "drizzle-orm";
 
 //  CREATE Expense
@@ -15,7 +15,7 @@ export const createExpense = asyncWrapper(async (req: Request, res: Response) =>
 
   const [expense] = await db.insert(expenses).values({
     userId,
-    amount: amount.toString(), // ✅ Ensure numeric field is passed as string
+    amount: amount.toString(),
     description,
   }).returning();
 
@@ -73,7 +73,7 @@ export const updateExpense = asyncWrapper(async (req: Request, res: Response) =>
 
   const [updatedExpense] = await db
     .update(expenses)
-    .set({ amount: amount.toString(), description }) // ✅ amount as string
+    .set({ amount: amount.toString(), description })
     .where(
       and(
         eq(expenses.id, id),

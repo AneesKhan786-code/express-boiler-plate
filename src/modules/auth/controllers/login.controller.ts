@@ -1,18 +1,18 @@
 // ✅ Imports
 import { Request, Response, NextFunction } from "express";
 import { compare } from "bcryptjs";
-import { asyncWrapper } from "@/lib/fn-wrapper";
-import { HttpError } from "@/lib/fn-error";
+import { asyncWrapper } from "../../../lib/fn-wrapper";
+import { HttpError } from "../../../lib/fn-error";
 import { loginEntity } from "../dto/auth.dto";
-import redisClient from "@/adapters/redis/redis.adapter";
+import redisClient from "../../../adapters/redis/redis.adapter";
 import { sendOtpToEmail } from "../../user/services/mail.service";
 import { generateOtp } from "@/utils/otp";
 import { generateAccessToken, generateRefreshToken } from "../../../utils/jwt";
-import { db } from "@/db/drizzle"; // ✅ Drizzle DB
-import { users } from "../../../db/schema/users"; // ✅ Your Drizzle schema (adjust path if needed)
+import { db } from "../../../drizzle/db"
+import { users } from "../../../drizzle/schema/users";
 import { eq } from "drizzle-orm";
 
-// ✅ Login Controller
+//  Login Controller
 export const login = asyncWrapper(async (req: Request, res: Response, next: NextFunction) => {
   const parsed = loginEntity.safeParse(req.body);
   if (!parsed.success) {
@@ -22,7 +22,7 @@ export const login = asyncWrapper(async (req: Request, res: Response, next: Next
   const { email, password } = parsed.data;
   const normalizedEmail = email.toLowerCase();
 
-  // ✅ Drizzle Query
+  // Drizzle Query
   const result = await db
     .select()
     .from(users)
@@ -76,7 +76,7 @@ export const login = asyncWrapper(async (req: Request, res: Response, next: Next
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: false, 
+    secure: false,
     path: "/api/refresh",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });

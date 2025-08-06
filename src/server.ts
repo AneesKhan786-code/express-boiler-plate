@@ -1,6 +1,6 @@
 // src/server.ts
 import app from "./app";
-import { db } from "./db/drizzle";
+import { db } from "./drizzle/db";
 import { sql } from "drizzle-orm";
 
 const PORT = 4000;

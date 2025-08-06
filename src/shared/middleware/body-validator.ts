@@ -1,4 +1,4 @@
-import { HttpError } from "@/lib/fn-error";
+import { HttpError } from "../../lib/fn-error";
 import type { NextFunction, Request, Response } from "express";
 import { ZodSchema } from "zod";
 

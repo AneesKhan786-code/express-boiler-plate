@@ -1,17 +1,17 @@
 import { Request, Response, NextFunction } from "express";
-import { asyncWrapper } from "@/lib/fn-wrapper";
-import { db } from "@/db/drizzle";
-import { users } from "@/db/schema/users";
-import { jobs } from "@/db/schema/jobs";
-import { expenses } from "@/db/schema/expenses";
+import { asyncWrapper } from "../../../lib/fn-wrapper";
+import { db } from "../../../drizzle/db"
+import { users } from "../../../drizzle/schema/users";
+import { jobs } from "../../../drizzle/schema/jobs";
+import { expenses } from "../../../drizzle/schema/expenses";
 import { eq, and, sql } from "drizzle-orm";
 import { sendNoteToUser } from "../services/mail.service";
 
-// ✅ Get Job & Today's Expense using Drizzle ORM
+// Get Job & Today's Expense using Drizzle ORM
 export const getUserJobAndTodayExpense = asyncWrapper(async (req: Request, res: Response, next) => {
   const userId = (req as any).user.id;
 
-  // 🔹 Get User Name
+  // Get User Name
   const user = await db.query.users.findFirst({
     where: eq(users.id, userId),
     columns: {
@@ -19,7 +19,7 @@ export const getUserJobAndTodayExpense = asyncWrapper(async (req: Request, res: 
     },
   });
 
-  // 🔹 Get Job Title (LIMIT 1)
+  // Get Job Title (LIMIT 1)
   const job = await db.query.jobs.findFirst({
     where: eq(jobs.userId, userId),
     columns: {
@@ -27,7 +27,7 @@ export const getUserJobAndTodayExpense = asyncWrapper(async (req: Request, res: 
     },
   });
 
-  // 🔹 Get Today's Expenses
+  // Get Today's Expenses
   const todayExpenses = await db
     .select({
       amount: expenses.amount,
@@ -41,7 +41,7 @@ export const getUserJobAndTodayExpense = asyncWrapper(async (req: Request, res: 
       )
     );
 
-  // 🔹 Response
+  // Response
   res.status(200).json({
     data: {
       name: user?.name,
@@ -51,7 +51,7 @@ export const getUserJobAndTodayExpense = asyncWrapper(async (req: Request, res: 
   });
 });
 
-// ✅ Send Note Email Controller (no changes required)
+//  Send Note Email Controller (no changes required)
 export const sendNoteEmailController = async (
   req: Request,
   res: Response,
