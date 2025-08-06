@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { createJob , getAllJobs , getJobById , updateJob , deleteJob , getMyJob } from "../controllers/jobs.controller";
 import { protect } from "../../../shared/middleware/auth.middleware";
-import { checkRole } from "@/shared/middleware/rbac.middleware"; 
+import { checkRole } from "../../../shared/middleware/rbac.middleware"; 
 
 const router = Router();
 

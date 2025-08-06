@@ -10,7 +10,7 @@
 
 // export const upload = multer({
 //   storage: multerS3({
-//     s3: s3, // ✅ S3 from AWS SDK v2
+//     s3: s3, // S3 from AWS SDK v2
 //     bucket: bucket,
 //     acl: 'public-read',
 //     metadata: (

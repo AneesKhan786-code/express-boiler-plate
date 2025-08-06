@@ -1,5 +1,3 @@
-// utils/helper.ts
-
 export function fillMissingMonths(data: any[], year: number) {
   const fullYearMonths = Array.from({ length: 12 }).map((_, i) => {
     const date = new Date(year, i);

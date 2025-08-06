@@ -1,13 +1,13 @@
+import { drizzle } from 'drizzle-orm/node-postgres';
 import { Request, Response } from "express";
 import { eq } from "drizzle-orm";
-import { db } from "@/db/drizzle";
-import { users, products, categories } from "@/db/schema";
-import { asyncWrapper } from "@/lib/fn-wrapper";
-import { HttpError } from "@/lib/fn-error";
+import { db } from "../../../drizzle/db";
+import { users, products, categories } from "../../../drizzle/index";
+import { asyncWrapper } from "../../../lib/fn-wrapper";
+import { HttpError } from "../../../lib/fn-error";
 import { createCategoryDto, createProductDto } from "../dto/admin.dto";
 import { hash } from "bcryptjs";
 import { sendUserCredentials } from "@/modules/user/services/mail.service";
-// controller/admin.controller.ts
 import { getDashboardDataService } from "../services/admin.service";
 
 export const getDashboardData = asyncWrapper(async (req: Request, res: Response) => {
@@ -15,7 +15,6 @@ export const getDashboardData = asyncWrapper(async (req: Request, res: Response)
   const data = await getDashboardDataService(year);
   res.status(200).json(data);
 });
-
 
 //  Create Category
 export const createCategory = asyncWrapper(async (req, res, next) => {
