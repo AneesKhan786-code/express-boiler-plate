@@ -1,11 +1,11 @@
 import { z } from "zod";
 
 export const createCategoryDto = z.object({
-  name: z.string().trim().min(2).max(100)
+  name: z.string().min(1),
 });
 
 export const createProductDto = z.object({
-  name: z.string().min(2),
-  price: z.number().min(1),
-  category_id: z.number()
+  name: z.string().min(1),
+  price: z.number().nonnegative(),
+  category_id: z.string().uuid(), 
 });

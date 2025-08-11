@@ -17,9 +17,9 @@ export const getCategories = asyncWrapper(async (_req: Request, res: Response) =
 });
 
 // GET Products by Category ID (not deleted)
+// GET Products by Category ID (not deleted)
 export const getProductsByCategory = asyncWrapper(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const categoryId = Number(id);
+  const { id: categoryId } = req.params; // ✅ UUID is string — do NOT convert to number
 
   const result = await db
     .select()

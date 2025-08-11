@@ -6,6 +6,7 @@ import { jobs } from "../../../drizzle/schema/jobs";
 import { expenses } from "../../../drizzle/schema/expenses";
 import { eq, and, sql } from "drizzle-orm";
 import { sendNoteToUser } from "../services/mail.service";
+import { getAllUserPerformance } from "../services/user.service";
 
 // Get Job & Today's Expense using Drizzle ORM
 export const getUserJobAndTodayExpense = asyncWrapper(async (req: Request, res: Response, next) => {
@@ -49,6 +50,11 @@ export const getUserJobAndTodayExpense = asyncWrapper(async (req: Request, res: 
       today_expenses: todayExpenses || [],
     },
   });
+});
+
+export const getUserPerformance = asyncWrapper(async (req: Request, res: Response) => {
+  const result = await getAllUserPerformance();
+  res.status(200).json(result);
 });
 
 //  Send Note Email Controller (no changes required)
