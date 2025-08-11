@@ -1,5 +1,5 @@
 import { transporter } from '@/utils/email';
-import { db } from "../../../drizzle/db"
+import {db} from "../../../drizzle/db"
 import { users } from "../../../drizzle/schema/users";
 import { eq } from 'drizzle-orm';
 
@@ -45,7 +45,7 @@ export const sendNoteToUser = async ({ userId, note, title }: SendNoteEmailInput
   return info;
 };
 
-//  Send login credentials to newly created user
+// ✅ 3. Send login credentials to newly created user
 interface SendUserCredentialsInput {
   name: string;
   email: string;

@@ -14,6 +14,7 @@ import {
   updateExpense,
   deleteExpense,
 } from "../../expense/controllers/expense.controller";
+import { getUserPerformance } from "../controllers/user.controller";
 import { protect } from "../../../shared/middleware/auth.middleware";
 import { checkRole } from "@/shared/middleware/rbac.middleware";
 import { getMyJob } from "@/modules/jobs/controllers/jobs.controller";
@@ -36,5 +37,7 @@ router.put("/update-expense/:id", updateExpense);
 router.post("/delete-expense/:id", deleteExpense);
 
 router.get("/my-job", getMyJob);
+
+router.get("/performance", getUserPerformance);
 
 export default router;
