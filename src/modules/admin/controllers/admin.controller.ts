@@ -35,14 +35,24 @@ export const createProduct = asyncWrapper(async (req, res, next) => {
 
   const { name, price, category_id } = parsed.data;
 
+  const userId = req.user?.id?.toString();
+  if (!userId) return next(new HttpError("User not authenticated", 401));
+
+  const [existingCategory] = await db.select().from(categories).where(eq(categories.id, category_id));
+  if (!existingCategory) {
+    return next(new HttpError("Category not found", 404));
+  }
+
   const [product] = await db.insert(products).values({
     name,
     price,
     categoryId: category_id,
+    userId,
   }).returning();
 
   res.status(201).json({ product });
 });
+
 
 // Update Category
 export const updateCategory = asyncWrapper(async (req, res, next) => {

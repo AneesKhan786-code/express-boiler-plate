@@ -5,7 +5,7 @@ dotenv.config();
 const accessTokenSecret = process.env.JWT_ACCESS_SECRET!;
 const refreshTokenSecret = process.env.JWT_REFRESH_SECRET!;
 
-const accessTokenExpiry = process.env.ACCESS_TOKEN_EXPIRES_IN || "15m";
+const accessTokenExpiry = process.env.ACCESS_TOKEN_EXPIRES_IN || "1d";
 const refreshTokenExpiry = process.env.REFRESH_TOKEN_EXPIRES_IN || "7d";
 
 export const generateAccessToken = (payload: object) => {
