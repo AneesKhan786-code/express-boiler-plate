@@ -17,6 +17,9 @@ import { protect } from "@/shared/middleware/auth.middleware";
 import { checkRole } from "@/shared/middleware/rbac.middleware";
 import { createJob } from "../../jobs/controllers/jobs.controller";
 import { getExpenses } from "@/modules/expense/controllers/expense.controller";
+import { getUserPerformance } from "../controllers/admin.controller";
+import { getAllUsersForAdmin } from "../controllers/admin.controller";
+
 
 const router = Router();
 
@@ -39,5 +42,9 @@ router.post("/create-job", createJob);
 router.get("/expenses", getExpenses);
 
 router.get("/graph-data", getDashboardData); //for any year ?year=2023
+
+router.get("/performance", getUserPerformance);
+
+router.get("/get-users", getAllUsersForAdmin);
 
 export default router;

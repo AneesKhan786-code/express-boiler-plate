@@ -1,6 +1,8 @@
 import { db } from "../../../drizzle/db";
 import { sql } from "drizzle-orm";
 import { fillMissingMonths } from "@/utils/helper";
+import { users } from "../../../drizzle/schema/users";
+import { eq } from "drizzle-orm";
 
 export const getDashboardDataService = async (year: number) => {
   const result = await db.execute(
@@ -34,4 +36,20 @@ export const getDashboardDataService = async (year: number) => {
       totalProducts,
     },
   ];
+};
+
+export const getAllNormalUsers = async () => {
+  const result = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      verified: users.verified,
+      createdAt: users.createdAt,
+    })
+    .from(users)
+    .where(eq(users.role, "user"))
+    .orderBy(users.createdAt);
+
+  return result;
 };
