@@ -9,12 +9,29 @@ import { createCategoryDto, createProductDto } from "../dto/admin.dto";
 import { hash } from "bcryptjs";
 import { sendUserCredentials } from "@/modules/user/services/mail.service";
 import { getDashboardDataService } from "../services/admin.service";
+import { getAllUserPerformance } from "../services/performance.service";
+import { getAllNormalUsers } from "../services/admin.service";
+
+export const getAllUsersForAdmin = asyncWrapper(async (req, res) => {
+  const users = await getAllNormalUsers();
+  res.status(200).json({
+    message: "Users fetched successfully",
+    count: users.length,
+    users,
+  });
+});
 
 export const getDashboardData = asyncWrapper(async (req: Request, res: Response) => {
   const year = parseInt(req.query.year as string) || new Date().getFullYear();
   const data = await getDashboardDataService(year);
   res.status(200).json(data);
 });
+
+export const getUserPerformance = asyncWrapper(async (req: Request, res: Response) => {
+  const result = await getAllUserPerformance();
+  res.status(200).json(result);
+});
+
 
 //  Create Category
 export const createCategory = asyncWrapper(async (req, res, next) => {
@@ -151,6 +168,7 @@ export const createUserByAdmin = asyncWrapper(async (req, res, next) => {
     name: users.name,
     email: users.email,
   });
+  
 
   await sendUserCredentials({ name, email, password });
 
