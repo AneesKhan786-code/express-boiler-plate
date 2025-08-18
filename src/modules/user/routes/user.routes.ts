@@ -1,7 +1,6 @@
 import { Router } from "express";
 import {
   getUserJobAndTodayExpense,
-  sendNoteEmailController,
 } from "../controllers/user.controller";
 import {
   getCategories,
@@ -26,8 +25,6 @@ router.get("/categories", getCategories);
 router.get("/categories/products/:id", getProductsByCategory);
 
 router.get("/job-expense", getUserJobAndTodayExpense);//Sub-Query
-
-router.post("/send-email", sendNoteEmailController);
 
 router.post("/create-expense", createExpense);
 router.get("/my-expenses", getExpenses);

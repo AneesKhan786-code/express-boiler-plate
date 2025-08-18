@@ -11,6 +11,27 @@ import { sendUserCredentials } from "@/modules/user/services/mail.service";
 import { getDashboardDataService } from "../services/admin.service";
 import { getAllUserPerformance } from "../services/performance.service";
 import { getAllNormalUsers } from "../services/admin.service";
+import { sendNoteToUser } from "../../user/services/mail.service";
+
+export const adminSendEmailController = asyncWrapper(async (req: Request, res: Response, next) => {
+  const userId = req.body.userId || req.body.user_id;
+  const { title, note } = req.body;
+
+  if (!userId || !title || !note) {
+    return next(new HttpError("Missing required fields", 400));
+  }
+
+  try {
+    const info = await sendNoteToUser({ userId, title, note });
+
+    res.status(200).json({
+      message: "Email sent successfully ✅",
+      info,
+    });
+  } catch (err: any) {
+    return next(new HttpError(err.message || "Failed to send email", 500));
+  }
+});
 
 export const getAllUsersForAdmin = asyncWrapper(async (req, res) => {
   const users = await getAllNormalUsers();
@@ -35,11 +56,11 @@ export const getUserPerformance = asyncWrapper(async (req: Request, res: Respons
 
 //  Create Category
 export const createCategory = asyncWrapper(async (req, res, next) => {
-  const parsed = createCategoryDto.safeParse(req.body);
-  if (!parsed.success) return next(new HttpError("Invalid input", 400));
+  // const parsed = createCategoryDto.safeParse(req.body);
+  // if (!parsed.success) return next(new HttpError("Invalid input", 400));
 
   const [category] = await db.insert(categories).values({
-    name: parsed.data.name,
+    name: req.body.name,
   }).returning();
 
   res.status(201).json({ category });
@@ -47,10 +68,10 @@ export const createCategory = asyncWrapper(async (req, res, next) => {
 
 // Create Product
 export const createProduct = asyncWrapper(async (req, res, next) => {
-  const parsed = createProductDto.safeParse(req.body);
-  if (!parsed.success) return next(new HttpError("Invalid input", 400));
+  // const parsed = createProductDto.safeParse(req.body);
+  // if (!parsed.success) return next(new HttpError("Invalid input", 400));
 
-  const { name, price, category_id } = parsed.data;
+  const { name, price, category_id } = req.body;
 
   const userId = req.user?.id?.toString();
   if (!userId) return next(new HttpError("User not authenticated", 401));
@@ -89,15 +110,15 @@ export const updateCategory = asyncWrapper(async (req, res, next) => {
 
 // Soft Delete Category
 export const deleteCategory = asyncWrapper(async (req, res, next) => {
-  const categoryId = req.params.id; // ✅ UUID, no Number()
+  const categoryId = req.params.id; 
 
   const [existing] = await db.select().from(categories).where(eq(categories.id, categoryId));
 
-  if (!existing || existing.deleted) // ✅ changed isDeleted → deleted
+  if (!existing || existing.deleted) 
     return next(new HttpError("Category not found or already deleted", 404));
 
   const [deleted] = await db.update(categories)
-    .set({ deleted: true }) // ✅ changed isDeleted → deleted
+    .set({ deleted: true }) 
     .where(eq(categories.id, categoryId))
     .returning();
 

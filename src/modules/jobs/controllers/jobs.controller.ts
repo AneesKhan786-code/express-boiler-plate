@@ -10,7 +10,7 @@ export const createJob = asyncWrapper(async (req: Request, res: Response) => {
   const parsed = createJobDto.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input" });
 
-  const { title, salary, user_id } = parsed.data;
+  const { title, salary, description, user_id } = parsed.data;
   const loggedInUser = (req as any).user;
 
   let targetUserId = loggedInUser.id;
@@ -18,10 +18,20 @@ export const createJob = asyncWrapper(async (req: Request, res: Response) => {
     targetUserId = user_id;
   }
 
+  const [existingJob] = await db
+    .select()
+    .from(jobs)
+    .where(and(eq(jobs.userId, targetUserId), eq(jobs.isDeleted, false)));
+
+  if (existingJob) {
+    return res.status(400).json({ error: "You already have an active job." });
+  }
+
   const [job] = await db
     .insert(jobs)
     .values({
       title,
+      description,
       salary,
       userId: targetUserId,
     })
