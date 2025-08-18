@@ -1,5 +1,5 @@
 import { transporter } from '@/utils/email';
-import {db} from "../../../drizzle/db"
+import { db } from "../../../drizzle/db";
 import { users } from "../../../drizzle/schema/users";
 import { eq } from 'drizzle-orm';
 
@@ -15,7 +15,7 @@ interface SendNoteEmailInput {
   title: string;
 }
 
-//  Send OTP during signup
+// 1️⃣ Send OTP during signup
 export const sendOtpToEmail = async ({ email, name, otp }: SendOtpInput) => {
   return await transporter.sendMail({
     from: process.env.MAIL_USER,
@@ -25,9 +25,10 @@ export const sendOtpToEmail = async ({ email, name, otp }: SendOtpInput) => {
   });
 };
 
-//  Send note to verified user using Drizzle
+// 2️⃣ Send note to verified user using Drizzle (Admin/User)
 export const sendNoteToUser = async ({ userId, note, title }: SendNoteEmailInput) => {
-  const result = await db.select({ name: users.name, email: users.email })
+  const result = await db
+    .select({ name: users.name, email: users.email })
     .from(users)
     .where(eq(users.id, userId));
 
@@ -45,7 +46,7 @@ export const sendNoteToUser = async ({ userId, note, title }: SendNoteEmailInput
   return info;
 };
 
-// ✅ 3. Send login credentials to newly created user
+// 3️⃣ Send login credentials to newly created user
 interface SendUserCredentialsInput {
   name: string;
   email: string;

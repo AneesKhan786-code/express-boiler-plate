@@ -22,23 +22,47 @@ export const createExpense = asyncWrapper(async (req: Request, res: Response) =>
   res.status(201).json({ message: "Expense recorded", expense });
 });
 
-//  GET Expenses
-export const getExpenses = asyncWrapper(async (req: Request, res: Response) => {
-  const userId = (req as any).user.id;
 
+export const getExpenses = asyncWrapper(async (req: Request, res: Response) => {
+  const { id: userId, role } = (req as any).user;
+
+  let expenseList;
+  if (role === "admin") {
+    // Admin gets all
+    expenseList = await db
+      .select()
+      .from(expenses)
+      .where(eq(expenses.deleted, false))
+      .orderBy(desc(expenses.createdAt));
+  } else {
+    // User gets own
+    expenseList = await db
+      .select()
+      .from(expenses)
+      .where(
+        and(
+          eq(expenses.userId, userId),
+          eq(expenses.deleted, false)
+        )
+      )
+      .orderBy(desc(expenses.createdAt));
+  }
+
+  res.status(200).json({ expenses: expenseList });
+});
+
+
+// Get All Expenses (Admin Only)
+export const getAllExpensesForAdmin = asyncWrapper(async (req: Request, res: Response) => {
   const expenseList = await db
     .select()
     .from(expenses)
-    .where(
-      and(
-        eq(expenses.userId, userId),
-        eq(expenses.deleted, false)
-      )
-    )
+    .where(eq(expenses.deleted, false))
     .orderBy(desc(expenses.createdAt));
 
   res.status(200).json({ expenses: expenseList });
 });
+
 
 //  GET Expense by ID
 export const getExpenseById = asyncWrapper(async (req: Request, res: Response) => {
