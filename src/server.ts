@@ -8,7 +8,7 @@ const PORT = 4000;
 (async () => {
   try {
     await db.execute(sql`SELECT 1`);
-    console.log(" PostgreSQL (notSupabase) connected");
+    console.log(" PostgreSQL (Neon) connected");
     app.listen(PORT, () => {
       console.log(` Server running on http://localhost:${PORT}`);
     });
