@@ -8,7 +8,7 @@ import redisClient from "../../../adapters/redis/redis.adapter";
 import { sendOtpToEmail } from "../../user/services/mail.service";
 import { generateOtp } from "@/utils/otp";
 import { generateAccessToken, generateRefreshToken } from "../../../utils/jwt";
-import { db } from "../../../drizzle/db"
+import { db } from "../../../drizzle/db";
 import { users } from "../../../drizzle/schema/users";
 import { eq } from "drizzle-orm";
 
@@ -22,7 +22,7 @@ export const login = asyncWrapper(async (req: Request, res: Response, next: Next
   const { email, password } = parsed.data;
   const normalizedEmail = email.toLowerCase();
 
-  // Drizzle Query
+  // 🔎 User nikaalo
   const result = await db
     .select()
     .from(users)
@@ -34,14 +34,21 @@ export const login = asyncWrapper(async (req: Request, res: Response, next: Next
 
   const user = result[0];
 
+  // ⛔ Google-only user ka check
+  if (!user.password) {
+    return next(new HttpError("Password not set. Please login with Google.", 400));
+  }
+
+  // 🔑 Password compare
   const isMatch = await compare(password, user.password);
   if (!isMatch) {
     return next(new HttpError("Invalid credentials", 401));
   }
 
+  // ✅ OTP if not verified
   if (!user.verified) {
     const otp = generateOtp();
-    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 min
+    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
 
     await redisClient.set(
       `login-otp:${normalizedEmail}`,
@@ -65,6 +72,7 @@ export const login = asyncWrapper(async (req: Request, res: Response, next: Next
     });
   }
 
+  // 🎟 JWT Tokens
   const payload = {
     id: user.id,
     email: user.email,
