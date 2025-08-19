@@ -11,6 +11,9 @@ import { verifyOtpController } from "../controllers/verifyOtp.controller";
 import { verifyOtpSchema } from "../dto/verify.dto";
 import { resendOtpController } from "../controllers/resendOtp.controller";
 
+import { googleLoginController } from "../controllers/google.controller";
+import { googleLoginDto } from "../dto/google.dto";
+
 const authRouter = Router();
 
 authRouter.post("/verify-otp", validator(verifyOtpSchema), verifyOtpController);
@@ -19,5 +22,7 @@ authRouter.get("/refresh", refresh);
 authRouter.get("/protected", protect, protectedRoute);
 authRouter.post("/signup", validator(registerEntity), signup);
 authRouter.post("/login", validator(loginEntity), login);
+
+authRouter.post("/google", validator(googleLoginDto), googleLoginController);
 
 export { authRouter };
