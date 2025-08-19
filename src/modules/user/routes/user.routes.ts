@@ -34,6 +34,4 @@ router.post("/delete-expense/:id", deleteExpense);
 
 router.get("/my-job", getMyJob);
 
-
-
 export default router;
