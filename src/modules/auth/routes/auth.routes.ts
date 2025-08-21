@@ -1,4 +1,3 @@
-// src/modules/auth/routes/auth.routes.ts
 import { Router } from "express";
 import { signup } from "../controllers/register.controller";
 import { refresh } from "../controllers/refresh.controller";
@@ -10,7 +9,7 @@ import { login } from "../controllers/login.controller";
 import { verifyOtpController } from "../controllers/verifyOtp.controller";
 import { verifyOtpSchema } from "../dto/verify.dto";
 import { resendOtpController } from "../controllers/resendOtp.controller";
-import { forgotPassword, verifyResetOtpController, resetPassword } from "../controllers/passwordReset.controller";
+import { forgotPassword, verifyResetOtpController, resetPassword, changePassword } from "../controllers/passwordReset.controller";
 import { googleLoginController } from "../controllers/google.controller";
 import { googleLoginDto } from "../dto/google.dto";
 
@@ -26,8 +25,6 @@ authRouter.post("/google", validator(googleLoginDto), googleLoginController);
 authRouter.post("/forgot-password", forgotPassword);
 authRouter.post("/verify-reset-otp", verifyResetOtpController);
 authRouter.post("/reset-password", resetPassword);
+authRouter.post("/change-password", protect, changePassword);
 
 export { authRouter };
-
-
-
