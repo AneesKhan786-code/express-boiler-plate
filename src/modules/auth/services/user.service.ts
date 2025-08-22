@@ -4,17 +4,11 @@ import { eq } from "drizzle-orm";
 import { hash, compare } from "bcryptjs";
 import { HttpError } from "@/lib/fn-error";
 
-/**
- * Update user password by userId (uuid string)
- */
 export const updateUserPasswordById = async (userId: string, newPassword: string) => {
   const hashed = await hash(newPassword, 10);
   await db.update(users).set({ password: hashed }).where(eq(users.id, userId));
 };
 
-/**
- * Change password with old password verification
- */
 export const changeUserPassword = async (userId: string, oldPassword: string, newPassword: string) => {
   const rows = await db.select().from(users).where(eq(users.id, userId));
   if (rows.length === 0) {
@@ -23,7 +17,6 @@ export const changeUserPassword = async (userId: string, oldPassword: string, ne
 
   const user = rows[0];
 
-  // ✅ Google users ka password null hoga
   if (!user.password) {
     throw new HttpError("This account uses Google login. Password change not allowed.", 400);
   }
