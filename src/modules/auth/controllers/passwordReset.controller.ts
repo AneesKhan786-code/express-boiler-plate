@@ -8,9 +8,6 @@ import {
 } from "../services/passwordReset.service";
 import { updateUserPasswordById, changeUserPassword } from "../services/user.service";
 
-/**
- * Forgot Password -> Send OTP
- */
 export const forgotPassword = asyncWrapper(async (req, res, next) => {
   const { email } = req.body ?? {};
   if (!email) return next(new HttpError("Email is required", 400));
@@ -22,9 +19,6 @@ export const forgotPassword = asyncWrapper(async (req, res, next) => {
   });
 });
 
-/**
- * Verify OTP
- */
 export const verifyResetOtpController = asyncWrapper(async (req, res, next) => {
   const { email, otp } = req.body ?? {};
   if (!email || !otp) return next(new HttpError("Email and OTP are required", 400));
@@ -36,9 +30,6 @@ export const verifyResetOtpController = asyncWrapper(async (req, res, next) => {
   });
 });
 
-/**
- * Reset password after OTP verified
- */
 export const resetPassword = asyncWrapper(async (req, res, next) => {
   const { email, newPassword } = req.body ?? {};
   if (!email || !newPassword) {
@@ -46,8 +37,6 @@ export const resetPassword = asyncWrapper(async (req, res, next) => {
   }
 
   const { userId } = await assertResetVerified(email);
-
-  // ✅ userId will always be string (uuid)
   await updateUserPasswordById(userId, newPassword);
 
   await clearResetVerified(email);
@@ -57,17 +46,13 @@ export const resetPassword = asyncWrapper(async (req, res, next) => {
   });
 });
 
-/**
- * Change Password (for logged-in users)
- */
 export const changePassword = asyncWrapper(async (req, res, next) => {
   const { oldPassword, newPassword } = req.body ?? {};
   if (!oldPassword || !newPassword) {
     return next(new HttpError("Old password and new password are required", 400));
   }
 
-  // 👇 JWT protect middleware required
-  const userId = String(req.user?.id); // ✅ force convert number → string
+  const userId = String(req.user?.id);
   if (!userId) return next(new HttpError("Unauthorized", 401));
 
   await changeUserPassword(userId, oldPassword, newPassword);
