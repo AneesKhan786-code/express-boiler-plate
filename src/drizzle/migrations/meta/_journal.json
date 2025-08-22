@@ -43,6 +43,13 @@
       "when": 1755598105038,
       "tag": "0005_next_dagger",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1755863364968,
+      "tag": "0006_silly_mindworm",
+      "breakpoints": true
     }
   ]
 }

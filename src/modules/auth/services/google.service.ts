@@ -1,44 +1,34 @@
 // src/modules/auth/services/google.service.ts
 import { db } from "../../../drizzle/db";
 import { users } from "../../../drizzle/schema/users";
-import { eq, and, isNull } from "drizzle-orm";
+import { generateDummyPasswordHash } from "../../../utils/dummyPassword";
 
 export interface GoogleProfile {
   googleId: string;
   email: string;
   name: string;
+  verified: boolean;
 }
 
-export async function findOrCreateOrLinkGoogleUser(profile: GoogleProfile) {
-  const byEmail = await db.select().from(users).where(eq(users.email, profile.email));
+export async function findOrCreateGoogleUser(profile: GoogleProfile) {
+  // check if already exists (google sos)
+  const existing = await db.query.users.findFirst({
+    where: (u, { eq, and }) => and(eq(u.email, profile.email), eq(u.sos, "google")),
+  });
 
-  if (byEmail.length > 0) {
-    const u = byEmail[0];
+  if (existing) return existing;
 
-    // Already linked
-    if (u.googleId) return u;
+  const dummyHash = await generateDummyPasswordHash();
 
-    // Link existing password-user to Google
-    const updated = await db
-      .update(users)
-      .set({ googleId: profile.googleId, verified: true })
-      .where(and(eq(users.id, u.id), isNull(users.googleId)))
-      .returning();
+  const [inserted] = await db.insert(users).values({
+    name: profile.name,
+    email: profile.email,
+    googleId: profile.googleId,
+    password: dummyHash,
+    verified: profile.verified,
+    role: "user",
+    sos: "google",
+  }).returning();
 
-    return updated[0];
-  }
-
-  // Create new Google user
-  const inserted = await db
-    .insert(users)
-    .values({
-      name: profile.name,
-      email: profile.email,
-      googleId: profile.googleId,
-      verified: true,
-      role: "user",
-    })
-    .returning();
-
-  return inserted[0];
+  return inserted;
 }
