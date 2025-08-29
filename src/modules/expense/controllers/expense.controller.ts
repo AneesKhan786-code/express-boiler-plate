@@ -1,11 +1,10 @@
 import { Request, Response } from "express";
 import { asyncWrapper } from "../../../lib/fn-wrapper";
 import { createExpenseDto } from "../dto/expense.dto";
-import { db } from "../../../drizzle/db"
+import { db } from "../../../drizzle/db";
 import { expenses } from "../../../drizzle/schema/expenses";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 
-//  CREATE Expense
 export const createExpense = asyncWrapper(async (req: Request, res: Response) => {
   const parsed = createExpenseDto.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input" });
@@ -22,49 +21,72 @@ export const createExpense = asyncWrapper(async (req: Request, res: Response) =>
   res.status(201).json({ message: "Expense recorded", expense });
 });
 
-
 export const getExpenses = asyncWrapper(async (req: Request, res: Response) => {
   const { id: userId, role } = (req as any).user;
 
-  let expenseList;
+  const limit = Number(req.query.limit) || 5;
+  const page = Number(req.query.page) || 1;
+  const offset = (page - 1) * limit;
+
+  let whereCondition;
   if (role === "admin") {
-    // Admin gets all
-    expenseList = await db
-      .select()
-      .from(expenses)
-      .where(eq(expenses.deleted, false))
-      .orderBy(desc(expenses.createdAt));
+    whereCondition = eq(expenses.deleted, false);
   } else {
-    // User gets own
-    expenseList = await db
-      .select()
-      .from(expenses)
-      .where(
-        and(
-          eq(expenses.userId, userId),
-          eq(expenses.deleted, false)
-        )
-      )
-      .orderBy(desc(expenses.createdAt));
+    whereCondition = and(eq(expenses.userId, userId), eq(expenses.deleted, false));
   }
 
-  res.status(200).json({ expenses: expenseList });
+  const expenseList = await db
+    .select()
+    .from(expenses)
+    .where(whereCondition)
+    .orderBy(desc(expenses.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  const [{ count }] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(expenses)
+    .where(whereCondition);
+
+  res.status(200).json({
+    expenses: expenseList,
+    pagination: {
+      total: Number(count),
+      page,
+      limit,
+      totalPages: Math.ceil(Number(count) / limit),
+    },
+  });
 });
 
 
-// Get All Expenses (Admin Only)
 export const getAllExpensesForAdmin = asyncWrapper(async (req: Request, res: Response) => {
+  const limit = Number(req.query.limit) || 5;
+  const page = Number(req.query.page) || 1;
+  const offset = (page - 1) * limit;
+
   const expenseList = await db
     .select()
     .from(expenses)
     .where(eq(expenses.deleted, false))
-    .orderBy(desc(expenses.createdAt));
+    .orderBy(desc(expenses.createdAt))
+    .limit(limit)
+    .offset(offset);
 
-  res.status(200).json({ expenses: expenseList });
+  const [{ count }] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(expenses)
+    .where(eq(expenses.deleted, false));
+
+  res.status(200).json({
+    expenses: expenseList,
+    pagination: {
+      totalPages: Math.ceil(Number(count) / limit),
+    },
+  });
 });
 
 
-//  GET Expense by ID
 export const getExpenseById = asyncWrapper(async (req: Request, res: Response) => {
   const userId = (req as any).user.id;
   const { id } = req.params;
@@ -85,7 +107,7 @@ export const getExpenseById = asyncWrapper(async (req: Request, res: Response) =
   res.status(200).json({ expense });
 });
 
-//  UPDATE Expense
+
 export const updateExpense = asyncWrapper(async (req: Request, res: Response) => {
   const userId = (req as any).user.id;
   const { id } = req.params;
@@ -112,7 +134,8 @@ export const updateExpense = asyncWrapper(async (req: Request, res: Response) =>
   res.status(200).json({ message: "Expense updated", updatedExpense });
 });
 
-//  DELETE (soft) Expense
+
+// DELETE (soft) Expense
 export const deleteExpense = asyncWrapper(async (req: Request, res: Response) => {
   const userId = (req as any).user.id;
   const { id } = req.params;
